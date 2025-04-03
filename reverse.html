@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse Engineering | CTF Learning Hub</title>
+    <style>
+        body {background-color: #121212; color: #f8f8f8; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; line-height: 1.6;}
+        .container {width: 85%; margin: 0 auto; padding: 20px 0;}
+        header {border-bottom: 3px solid #ff9800; padding-bottom: 20px; margin-bottom: 30px; text-align: center;}
+        h1 {color: #ff9800; text-transform: uppercase;}
+        h2 {color: #4caf50; border-left: 4px solid #4caf50; padding-left: 10px; margin-top: 40px; cursor: pointer;}
+        h2::before {content: "+ "; color: #ff9800;}
+        h2.active::before {content: "- ";}
+        h3 {color: #2196f3;}
+        .card {background-color: #1e1e1e; border: 1px solid #333; border-radius: 5px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
+        .vuln-section {display: none; animation: fadeIn 0.5s;}
+        @keyframes fadeIn {from { opacity: 0; } to { opacity: 1; }}
+        .code-block {background-color: #2d2d2d; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; margin: 15px 0; border-left: 3px solid #ff9800; white-space: pre-wrap; word-break: break-all; tab-size: 4;}
+        .note {background-color: #33322d; border-left: 4px solid #ffd700; padding: 10px; margin: 15px 0;}
+        .warning {background-color: #3a1d1d; border-left: 4px solid #f44336; padding: 10px; margin: 15px 0;}
+        .tool {background-color: #1e2b3a; padding: 10px; border-radius: 5px; margin: 10px 0;}
+        a {color: #ff9800; text-decoration: none;}
+        a:hover {text-decoration: underline;}
+        nav {margin: 20px 0;}
+        nav a {margin-right: 15px; padding: 5px 10px; border: 1px solid #ff9800; border-radius: 3px;}
+        table {width: 100%; border-collapse: collapse; margin: 20px 0;}
+        th, td {border: 1px solid #444; padding: 8px; text-align: left;}
+        th {background-color: #333;}
+        tr:nth-child(even) {background-color: #1e1e1e;}
+        .sub-topic {margin-left: 20px; border-left: 2px solid #444; padding-left: 15px;}
+        .payload-list {columns: 3; column-gap: 20px;}
+        .payload-item {break-inside: avoid; margin-bottom: 10px;}
+        .show-more {color: #ff9800; cursor: pointer; text-decoration: underline; margin: 10px 0; display: inline-block;}
+        .more-payloads {display: none;}
+        .tool-name {color: #4caf50; cursor: pointer; text-decoration: underline;}
+        .tool-details {display: none; margin-top: 10px;}
+        .vulnerable-code {background-color: #3a1d1d; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 3px solid #f44336;}
+        .linux-option {color: #2196f3; cursor: pointer; text-decoration: underline; margin-right: 15px;}
+        .linux-install {display: none; margin-top: 10px;}
+        .asm-examples {background-color: #1e2b3a; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 3px solid #2196f3;}
+        .register {color: #ff9800; font-weight: bold;}
+        .ctf-tip {background-color: #2d1e3a; border-left: 4px solid #9c27b0; padding: 10px; margin: 15px 0;}
+        .flag-format {font-family: 'Courier New', Courier, monospace; color: #ff9800; background-color: #2d2d2d; padding: 2px 5px; border-radius: 3px;}
+        .file-format {background-color: #1e2b3a; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 3px solid #ff9800; font-family: monospace; white-space: pre; overflow-x: auto;}
+        .challenge-difficulty {margin: 15px 0; padding: 10px; border-radius: 5px;}
+        .beginner {background-color: #1e3a1d; border-left: 4px solid #4CAF50;}
+        .intermediate {background-color: #3a2d1e; border-left: 4px solid #FF9800;}
+        .advanced {background-color: #3a1d1d; border-left: 4px solid #F44336;}
+        .solution-steps {counter-reset: step; margin-left: 20px;}
+        .solution-steps li {position: relative; margin-bottom: 10px; list-style-type: none;}
+        .solution-steps li:before {
+            content: counter(step); counter-increment: step;
+            position: absolute; left: -30px;
+            background: #ff9800; color: #121212;
+            width: 20px; height: 20px;
+            border-radius: 50%; text-align: center;
+            line-height: 20px; font-weight: bold;
+        }
+        .cheatsheet {background-color: #1e1e3a; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #2196F3;}
+        .cheatsheet h4 {margin-top: 0; color: #2196F3;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reverse Engineering</h1>
+            <p>Master the art of analyzing compiled programs and binary code</p>
+            <nav>
+                <a href="ctf.html">Home</a>
+                <a href="#" class="nav-link" data-section="intro">Introduction</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="x86">x86 Assembly</a>
+                <a href="#" class="nav-link" data-section="arm">ARM Assembly</a>
+                <a href="#" class="nav-link" data-section="win">Windows RE</a>
+                <a href="#" class="nav-link" data-section="malware">Malware Analysis</a>
+                <a href="#" class="nav-link" data-section="challenges">CTF Challenges</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="intro">
+            <div class="card">
+                <h2>Introduction to Reverse Engineering</h2>
+                <div class="vuln-section">
+                    <p>Reverse engineering involves analyzing compiled programs to understand their functionality without access to source code.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Common File Formats</h3>
+                        <div class="file-format">
+ELF (Linux) Structure:
+┌─────────────────┐
+│    ELF Header   │
+├─────────────────┤
+│  Program Header │
+├─────────────────┤
+│    Sections     │
+├─────────────────┤
+│    Segments     │
+├─────────────────┤
+│ Section Header  │
+└─────────────────┘
+
+PE (Windows) Structure:
+┌─────────────────┐
+│     DOS Header  │
+├─────────────────┤
+│   DOS Stub      │
+├─────────────────┤
+│   PE Signature  │
+├─────────────────┤
+│  COFF Header    │
+├─────────────────┤
+│ Optional Header │
+├─────────────────┤
+│  Section Table  │
+├─────────────────┤
+│    Sections     │
+└─────────────────┘
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Reverse Engineering Tasks</h3>
+                        <ul>
+                            <li>Analyzing program logic and algorithms</li>
+                            <li>Finding and exploiting vulnerabilities</li>
+                            <li>Bypassing license checks and DRM</li>
+                            <li>Recovering lost source code</li>
+                            <li>Malware analysis</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>CTF Challenge Types</h3>
+                        <table>
+                            <tr>
+                                <th>Challenge Type</th>
+                                <th>Description</th>
+                                <th>Common Techniques</th>
+                            </tr>
+                            <tr>
+                                <td>Crackme</td>
+                                <td>Bypass authentication</td>
+                                <td>Patches, keygens</td>
+                            </tr>
+                            <tr>
+                                <td>Keygenme</td>
+                                <td>Generate valid license keys</td>
+                                <td>Algorithm reversing</td>
+                            </tr>
+                            <tr>
+                                <td>Packers</td>
+                                <td>Unpack protected binaries</td>
+                                <td>Dumping, debugging</td>
+                            </tr>
+                            <tr>
+                                <td>Malware</td>
+                                <td>Analyze malicious code</td>
+                                <td>Behavior analysis</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> Always start by running these commands:
+                        <div class="code-block">
+file ./challenge      # Identify file type
+strings ./challenge   # Extract visible strings
+checksec ./challenge  # Check protections
+ltrace ./challenge    # Trace library calls
+strace ./challenge    # Trace system calls
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>Reverse Engineering Tools</h2>
+                <div class="vuln-section">
+                    <div class="tool">
+                        <h3>Disassemblers & Decompilers</h3>
+                        <p><span class="tool-name">Ghidra</span> - NSA's open source reversing tool</p>
+                        <div class="tool-details" id="ghidra-details">
+                            <div class="code-block">
+# Install on Kali Linux
+sudo apt update && sudo apt install ghidra
+
+# Basic workflow:
+1. Create project
+2. Import binary
+3. Auto-analyze
+4. View decompiled code
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">IDA Pro</span> - Industry standard disassembler</p>
+                        <div class="tool-details" id="ida-details">
+                            <div class="code-block">
+# Commercial tool with free version available
+# Key features:
+- Interactive disassembly
+- Hex-Rays decompiler
+- Scriptable with Python/IDC
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Debuggers</h3>
+                        <p><span class="tool-name">GDB</span> - GNU Debugger with enhancements</p>
+                        <div class="tool-details" id="gdb-details">
+                            <div class="code-block">
+# Install with enhancements
+sudo apt install gdb gef
+
+# Basic commands:
+gdb ./binary
+(gdb) break *main
+(gdb) run
+(gdb) info registers
+(gdb) x/10i $pc  # Disassemble
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">x64dbg</span> - Windows debugger</p>
+                        <div class="tool-details" id="x64dbg-details">
+                            <div class="code-block">
+# Open-source Windows debugger
+# Features:
+- Similar to OllyDbg
+- Supports 32/64-bit
+- Plugin architecture
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Other Essential Tools</h3>
+                        <p><span class="tool-name">radare2</span> - Command-line reversing framework</p>
+                        <div class="tool-details" id="radare2-details">
+                            <div class="code-block">
+# Install on Kali
+sudo apt install radare2
+
+# Basic usage:
+r2 -AAA ./binary
+> afl            # List functions
+> s main         # Seek to main
+> pdf            # Disassemble function
+> iz             # View strings
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">Binary Ninja</span> - Modern reversing platform</p>
+                        <div class="tool-details" id="binja-details">
+                            <div class="code-block">
+# Commercial tool with free version
+# Features:
+- Multiple analysis levels
+- Python API
+- Cross-platform
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> Tool selection depends on:
+                        <ul>
+                            <li><span class="flag-format">Ghidra</span> for decompilation</li>
+                            <li><span class="flag-format">GDB</span> for Linux debugging</li>
+                            <li><span class="flag-format">x64dbg</span> for Windows</li>
+                            <li><span class="flag-format">radare2</span> for quick CLI analysis</li>
+                            <li><span class="flag-format">Binary Ninja</span> for commercial-grade analysis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="x86">
+            <div class="card">
+                <h2>x86/x64 Assembly</h2>
+                <div class="vuln-section">
+                    <p>Understanding assembly is crucial for effective reverse engineering.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Registers</h3>
+                        <div class="asm-examples">
+                            <p>32-bit (x86) registers:</p>
+                            <div class="code-block">
+EAX - Accumulator
+EBX - Base
+ECX - Counter
+EDX - Data
+ESI - Source Index
+EDI - Destination Index
+ESP - Stack Pointer
+EBP - Base Pointer
+EIP - Instruction Pointer
+                            </div>
+                            
+                            <p>64-bit (x64) extended registers:</p>
+                            <div class="code-block">
+RAX, RBX, RCX, RDX - 64-bit versions
+R8-R15 - Additional registers
+RSP - Stack Pointer
+RBP - Base Pointer
+RIP - Instruction Pointer
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Instructions</h3>
+                        <table>
+                            <tr>
+                                <th>Instruction</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                            </tr>
+                            <tr>
+                                <td>MOV</td>
+                                <td>Move data</td>
+                                <td>MOV EAX, 42</td>
+                            </tr>
+                            <tr>
+                                <td>PUSH/POP</td>
+                                <td>Stack operations</td>
+                                <td>PUSH EAX</td>
+                            </tr>
+                            <tr>
+                                <td>CALL/RET</td>
+                                <td>Function calls</td>
+                                <td>CALL 0x401000</td>
+                            </tr>
+                            <tr>
+                                <td>JMP/Jcc</td>
+                                <td>Jumps</td>
+                                <td>JNZ 0x401020</td>
+                            </tr>
+                            <tr>
+                                <td>LEA</td>
+                                <td>Load effective address</td>
+                                <td>LEA EAX, [EBX+4]</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Calling Conventions</h3>
+                        <div class="code-block">
+# cdecl (32-bit Linux)
+- Args pushed right-to-left
+- Caller cleans stack
+- Return in EAX
+
+# System V AMD64 (64-bit Linux)
+- Args in RDI, RSI, RDX, RCX, R8, R9
+- Stack for additional args
+- Return in RAX
+
+# stdcall (Windows)
+- Args pushed right-to-left
+- Callee cleans stack
+- Return in EAX
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Function Prologue/Epilogue</h3>
+                        <div class="code-block">
+# Typical function prologue
+push ebp        ; Save old base pointer
+mov ebp, esp    ; Set new base pointer
+sub esp, 0x10   ; Allocate stack space
+
+# Typical function epilogue
+mov esp, ebp    ; Restore stack pointer
+pop ebp         ; Restore base pointer
+ret             ; Return
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> Key patterns to recognize:
+                        <ul>
+                            <li>Function prologues/epilogues</li>
+                            <li>String comparisons (often before jumps)</li>
+                            <li>Mathematical operations (key calculations)</li>
+                            <li>Stack adjustments (local variables)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="arm">
+            <div class="card">
+                <h2>ARM Assembly</h2>
+                <div class="vuln-section">
+                    <p>ARM architecture is common in mobile and embedded systems.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Registers</h3>
+                        <div class="asm-examples">
+                            <div class="code-block">
+R0-R12 - General purpose
+R13 (SP) - Stack Pointer
+R14 (LR) - Link Register
+R15 (PC) - Program Counter
+CPSR - Current Program Status Register
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Instructions</h3>
+                        <table>
+                            <tr>
+                                <th>Instruction</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                            </tr>
+                            <tr>
+                                <td>MOV</td>
+                                <td>Move data</td>
+                                <td>MOV R0, #42</td>
+                            </tr>
+                            <tr>
+                                <td>LDR/STR</td>
+                                <td>Load/store</td>
+                                <td>LDR R0, [R1]</td>
+                            </tr>
+                            <tr>
+                                <td>PUSH/POP</td>
+                                <td>Stack operations</td>
+                                <td>PUSH {R0,R1}</td>
+                            </tr>
+                            <tr>
+                                <td>B/BL</td>
+                                <td>Branch/Branch with Link</td>
+                                <td>BL 0x1000</td>
+                            </tr>
+                            <tr>
+                                <td>CMP</td>
+                                <td>Compare</td>
+                                <td>CMP R0, R1</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Conditional Execution</h3>
+                        <div class="code-block">
+# Instructions can be conditional
+ADDEQ R0, R1, R2  ; Add if equal
+CMP R0, #10       ; Compare
+MOVGT R0, #1      ; Move if greater than
+                            </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Calling Convention</h3>
+                        <div class="code-block">
+# ARM (32-bit)
+- Args in R0-R3
+- Stack for additional args
+- Return in R0
+
+# ARM64 (AArch64)
+- Args in X0-X7
+- Stack for additional args
+- Return in X0
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>ARM Debugging Tools</h3>
+                        <p><span class="tool-name">QEMU</span> - ARM emulation</p>
+                        <div class="tool-details" id="qemu-details">
+                            <div class="code-block">
+# Run ARM binary on x86
+qemu-arm ./arm_binary
+
+# Debug with gdb-multiarch
+qemu-arm -g 1234 ./arm_binary
+gdb-multiarch -q
+(gdb) target remote :1234
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="win">
+            <div class="card">
+                <h2>Windows Reverse Engineering</h2>
+                <div class="vuln-section">
+                    <p>Windows binaries have unique characteristics and APIs.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>PE File Structure</h3>
+                        <div class="file-format">
+┌─────────────────┐
+│    DOS Header   │
+├─────────────────┤
+│   DOS Stub      │
+├─────────────────┤
+│   PE Signature  │
+├─────────────────┤
+│  COFF Header    │
+├─────────────────┤
+│ Optional Header │
+├─────────────────┤
+│  Section Table  │
+├─────────────────┤
+│    Sections     │
+└─────────────────┘
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Important Windows APIs</h3>
+                        <table>
+                            <tr>
+                                <th>API</th>
+                                <th>Description</th>
+                                <th>Common in</th>
+                            </tr>
+                            <tr>
+                                <td>MessageBox</td>
+                                <td>Display dialog</td>
+                                <td>Crackmes</td>
+                            </tr>
+                            <tr>
+                                <td>CreateFile</td>
+                                <td>File operations</td>
+                                <td>Keyloggers</td>
+                            </tr>
+                            <tr>
+                                <td>RegOpenKey</td>
+                                <td>Registry access</td>
+                                <td>License checks</td>
+                            </tr>
+                            <tr>
+                                <td>VirtualAlloc</td>
+                                <td>Memory allocation</td>
+                                <td>Packers</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Windows Specifics</h3>
+                        <div class="code-block">
+# DLL Characteristics
+- Exported functions
+- Import Address Table (IAT)
+- Relocations
+
+# Structured Exception Handling (SEH)
+- Used for error handling
+- Can be exploited
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Windows Tools</h3>
+                        <p><span class="tool-name">PE-bear</span> - PE file analyzer</p>
+                        <div class="tool-details" id="pebear-details">
+                            <div class="code-block">
+# Features:
+- View PE headers
+- Edit sections
+- Analyze imports/exports
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="malware">
+            <div class="card">
+                <h2>Malware Analysis</h2>
+                <div class="vuln-section">
+                    <p>Analyzing malicious software requires special techniques.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Analysis Types</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Tools</th>
+                            </tr>
+                            <tr>
+                                <td>Static</td>
+                                <td>Analyze without execution</td>
+                                <td>strings, IDA</td>
+                            </tr>
+                            <tr>
+                                <td>Dynamic</td>
+                                <td>Analyze while running</td>
+                                <td>Process Monitor, Wireshark</td>
+                            </tr>
+                            <tr>
+                                <td>Behavioral</td>
+                                <td>Observe effects</td>
+                                <td>Regshot, Procmon</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Malware Techniques</h3>
+                        <ul>
+                            <li>Process injection</li>
+                            <li>Packing/obfuscation</li>
+                            <li>Anti-debugging tricks</li>
+                            <li>Persistence mechanisms</li>
+                            <li>Command and control (C2)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Analysis Sandbox</h3>
+                        <div class="code-block">
+# Recommended setup
+- Virtual machine (VMware/VirtualBox)
+- Network isolation
+- Snapshots for recovery
+- Analysis tools pre-installed
+
+# Tools to install:
+- Process Monitor
+- Wireshark
+- API Monitor
+- PE-sieve
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For malware challenges:
+                        <ul>
+                            <li>Always analyze in a safe environment</li>
+                            <li>Look for unusual strings or imports</li>
+                            <li>Check for packed sections</li>
+                            <li>Monitor network activity</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="challenges">
+            <div class="card">
+                <h2>CTF Challenges</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>Challenge Difficulty Levels</h3>
+                        <div class="challenge-difficulty beginner">
+                            <h4>Beginner Challenges</h4>
+                            <ul>
+                                <li>Simple password check</li>
+                                <li>Hardcoded strings</li>
+                                <li>Basic XOR encryption</li>
+                                <li>No anti-debugging</li>
+                                <li>Single function analysis</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="challenge-difficulty intermediate">
+                            <h4>Intermediate Challenges</h4>
+                            <ul>
+                                <li>Packed binaries</li>
+                                <li>Simple anti-debugging</li>
+                                <li>Custom algorithm reversing</li>
+                                <li>Multi-stage validation</li>
+                                <li>Basic API usage</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="challenge-difficulty advanced">
+                            <h4>Advanced Challenges</h4>
+                            <ul>
+                                <li>VM-protected code</li>
+                                <li>Complex anti-analysis</li>
+                                <li>Custom crypto systems</li>
+                                <li>Kernel-mode components</li>
+                                <li>Obfuscated strings</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Step-by-Step Challenge Walkthrough</h3>
+                        <div class="solution-steps">
+                            <h4>Crackme Example Solution</h4>
+                            <ol>
+                                <li><strong>Initial Analysis:</strong>
+                                    <div class="code-block">file crackme
+strings crackme</div>
+                                </li>
+                                <li><strong>Behavior Observation:</strong>
+                                    <div class="code-block">./crackme
+# Try input: test
+# Observe "Wrong password" message</div>
+                                </li>
+                                <li><strong>Disassembly:</strong>
+                                    <div class="code-block">gdb crackme
+(gdb) disassemble main</div>
+                                </li>
+                                <li><strong>Key Findings:</strong>
+                                    <ul>
+                                        <li>Password comparison at 0x401152</li>
+                                        <li>Input length check (must be 10 chars)</li>
+                                        <li>XOR operation with 0x42</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Solution:</strong>
+                                    <div class="code-block"># Find XOR-encoded password in binary
+# Decode with: bytes(x ^ 0x42 for x in encoded)</div>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Quick Cheatsheet</h3>
+                        <div class="cheatsheet">
+                            <h4>Common CTF Challenge Patterns</h4>
+                            <table>
+                                <tr>
+                                    <th>Pattern</th>
+                                    <th>Solution Approach</th>
+                                    <th>Tools</th>
+                                </tr>
+                                <tr>
+                                    <td>Simple password check</td>
+                                    <td>Find string comparison, patch or extract password</td>
+                                    <td>GDB, Ghidra</td>
+                                </tr>
+                                <tr>
+                                    <td>XOR encryption</td>
+                                    <td>Find XOR key, decrypt strings</td>
+                                    <td>CyberChef, Python</td>
+                                </tr>
+                                <tr>
+                                    <td>Packed binary</td>
+                                    <td>Dump from memory after unpacking</td>
+                                    <td>x64dbg, Scylla</td>
+                                </tr>
+                                <tr>
+                                    <td>Anti-debugging</td>
+                                    <td>Patch checks or use stealth debugging</td>
+                                    <td>IDA, Frida</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="cheatsheet">
+                            <h4>Common Flag Locations</h4>
+                            <ul>
+                                <li>Hardcoded in binary (strings)</li>
+                                <li>Generated from input transformation</li>
+                                <li>Stored in registry/configuration files</li>
+                                <li>Retrieved from network during execution</li>
+                                <li>Hidden in binary's resource section</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Practice Techniques</h3>
+                        <div class="ctf-tip">
+                            <strong>Training Methodology:</strong>
+                            <ol>
+                                <li><strong>Static Analysis First:</strong>
+                                    <p>Always start with static analysis before running the binary</p>
+                                </li>
+                                <li><strong>Document Findings:</strong>
+                                    <p>Keep notes of function addresses, interesting strings, and potential vulnerabilities</p>
+                                </li>
+                                <li><strong>Dynamic Verification:</strong>
+                                    <p>Use debugging to verify your static analysis findings</p>
+                                </li>
+                                <li><strong>Automate Repetitive Tasks:</strong>
+                                    <p>Create scripts for common operations (decoding, bruteforcing)</p>
+                                </li>
+                            </ol>
+                        </div>
+                        
+                        <div class="note">
+                            <h4>Recommended Learning Path</h4>
+                            <ol>
+                                <li>Start with simple crackmes (easy level)</li>
+                                <li>Learn x86 assembly fundamentals</li>
+                                <li>Practice with CTF binaries from previous years</li>
+                                <li>Study common anti-reversing techniques</li>
+                                <li>Attempt malware analysis challenges</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Practice Platforms</h3>
+                        <table>
+                            <tr>
+                                <th>Platform</th>
+                                <th>Focus</th>
+                                <th>Difficulty</th>
+                            </tr>
+                            <tr>
+                                <td><a href="https://crackmes.one/" target="_blank">Crackmes.one</a></td>
+                                <td>Reverse engineering</td>
+                                <td>Beginner to Advanced</td>
+                            </tr>
+                            <tr>
+                                <td><a href="https://pwnable.kr/" target="_blank">Pwnable.kr</a></td>
+                                <td>RE + Exploitation</td>
+                                <td>Intermediate</td>
+                            </tr>
+                            <tr>
+                                <td><a href="https://www.reversinghero.com/" target="_blank">Reversing Hero</a></td>
+                                <td>Structured learning</td>
+                                <td>Beginner</td>
+                            </tr>
+                            <tr>
+                                <td><a href="https://microcorruption.com/" target="_blank">Microcorruption</a></td>
+                                <td>Embedded RE</td>
+                                <td>Intermediate</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>Reverse Engineering CTF Tips</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ol>
+                            <li>Run <span class="flag-format">file</span> and <span class="flag-format">strings</span></li>
+                            <li>Check for packing with <span class="flag-format">binwalk</span></li>
+                            <li>Open in disassembler (Ghidra/IDA)</li>
+                            <li>Identify key functions (main, check, verify)</li>
+                            <li>Analyze algorithm or patch binary</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common CTF Patterns</h3>
+                        <table>
+                            <tr>
+                                <th>Pattern</th>
+                                <th>Solution</th>
+                            </tr>
+                            <tr>
+                                <td>Simple compare</td>
+                                <td>Patch jump or change compare value</td>
+                            </tr>
+                            <tr>
+                                <td>Mathematical transform</td>
+                                <td>Reverse the algorithm</td>
+                            </tr>
+                            <tr>
+                                <td>Obfuscated code</td>
+                                <td>Dynamic analysis with debugger</td>
+                            </tr>
+                            <tr>
+                                <td>Packed binary</td>
+                                <td>Dump from memory or find unpack routine</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Challenge-Specific Tips</h3>
+                        <div class="ctf-tip">
+                            <h4>Crackme Challenges</h4>
+                            <ul>
+                                <li>Look for "success" and "failure" strings</li>
+                                <li>Trace user input flow through the program</li>
+                                <li>Patch conditional jumps to bypass checks</li>
+                                <li>Find hardcoded comparisons with your input</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="ctf-tip">
+                            <h4>Packed Binaries</h4>
+                            <ul>
+                                <li>Look for unusual entry point code</li>
+                                <li>Use memory dumping techniques</li>
+                                <li>Find the Original Entry Point (OEP)</li>
+                                <li>Look for unpacking loops</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="ctf-tip">
+                            <h4>Malware Challenges</h4>
+                            <ul>
+                                <li>Monitor file system changes</li>
+                                <li>Check for suspicious process injection</li>
+                                <li>Analyze network traffic</li>
+                                <li>Look for persistence mechanisms</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Quick Wins</h3>
+                        <ul>
+                            <li>Search for "flag{" or "CTF{" in strings</li>
+                            <li>Look for XOR operations with single byte keys</li>
+                            <li>Check for hardcoded passwords</li>
+                            <li>Patch conditional jumps (JNZ → JZ)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Time-Saving Techniques</h3>
+                        <div class="code-block">
+# Automate string extraction
+rabin2 -z binary > strings.txt
+
+# Quick function graph
+r2 -AAA -qc "ag > /tmp/graph.dot" binary
+xdot /tmp/graph.dot
+
+# Find cross-references to interesting strings
+grep -B5 -A5 "flag{" strings.txt
+                        </div>
+                        
+                        <div class="note">
+                            <strong>Pro Tip:</strong> Create a standard analysis checklist:
+                            <ol>
+                                <li>File identification</li>
+                                <li>Strings extraction</li>
+                                <li>Basic static analysis</li>
+                                <li>Behavioral analysis</li>
+                                <li>Dynamic analysis</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Useful Commands</h3>
+                        <div class="code-block">
+# Extract strings with unicode support
+strings -el binary  # Little-endian
+strings -eb binary  # Big-endian
+
+# Check for packing
+binwalk ./binary
+
+# Quick decompilation
+objdump -d -M intel ./binary | less
+
+# Debug with pwndbg
+gdb ./binary
+pwndbg> entry-break
+pwndbg> context
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> When stuck:
+                        <ul>
+                            <li>Try different tools (Ghidra vs IDA vs radare2)</li>
+                            <li>Look for symbolic execution options (angr)</li>
+                            <li>Search for write-ups of similar challenges</li>
+                            <li>Take a break and come back with fresh eyes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Reverse Engineering Guide</p>
+            <p>Remember: Always analyze malware in a safe, isolated environment.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.vuln-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Show more payloads
+        document.querySelectorAll('.show-more').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const target = document.getElementById(targetId);
+                target.style.display = target.style.display === 'block' ? 'none' : 'block';
+                button.textContent = target.style.display === 'block' ? 'Show less' : 'Show more';
+            });
+        });
+
+        // Show tool details
+        document.querySelectorAll('.tool-name').forEach(tool => {
+            tool.addEventListener('click', () => {
+                const details = tool.parentNode.nextElementSibling;
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Show Linux installation options
+        document.querySelectorAll('.linux-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const targetId = option.getAttribute('data-target');
+                const parent = option.parentNode;
+                
+                // Hide all installation methods in this tool
+                parent.querySelectorAll('.linux-install').forEach(install => {
+                    install.style.display = 'none';
+                });
+                
+                // Show selected installation method
+                document.getElementById(targetId).style.display = 'block';
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.vuln-section').style.display = 'block';
+    </script>
+</body>
+</html>

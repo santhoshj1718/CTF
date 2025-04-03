@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptography | CTF Learning Hub</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f8f8;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        header {
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff9800;
+            text-transform: uppercase;
+        }
+        h2 {
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+            padding-left: 10px;
+            margin-top: 40px;
+            cursor: pointer;
+        }
+        h2::before {
+            content: "+ ";
+            color: #ff9800;
+        }
+        h2.active::before {
+            content: "- ";
+        }
+        h3 {
+            color: #2196f3;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .crypto-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+            border-left: 3px solid #ff9800;
+            white-space: pre-wrap;
+            word-break: break-all;
+            tab-size: 4;
+        }
+        .note {
+            background-color: #33322d;
+            border-left: 4px solid #ffd700;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #3a1d1d;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tool {
+            background-color: #1e2b3a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ff9800;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        .sub-topic {
+            margin-left: 20px;
+            border-left: 2px solid #444;
+            padding-left: 15px;
+        }
+        .payload-list {
+            columns: 3;
+            column-gap: 20px;
+        }
+        .payload-item {
+            break-inside: avoid;
+            margin-bottom: 10px;
+        }
+        .show-more {
+            color: #ff9800;
+            cursor: pointer;
+            text-decoration: underline;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        .more-payloads {
+            display: none;
+        }
+        .tool-name {
+            color: #4caf50;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .tool-details {
+            display: none;
+            margin-top: 10px;
+        }
+        .vulnerable-code {
+            background-color: #3a1d1d;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #f44336;
+        }
+        .linux-option {
+            color: #2196f3;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-right: 15px;
+        }
+        .linux-install {
+            display: none;
+            margin-top: 10px;
+        }
+        .examples {
+            background-color: #1e2b3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #2196f3;
+        }
+        .ctf-tip {
+            background-color: #2d1e3a;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .flag-format {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff9800;
+            background-color: #2d2d2d;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .cipher-type {
+            color: #ff9800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Cryptography</h1>
+            <p>Master the art of encryption, decryption, and cryptanalysis for CTF challenges</p>
+            <nav>
+                <a href="ctf.html">Home</a>
+                <a href="#" class="nav-link" data-section="intro">Intro</a>
+                <a href="#" class="nav-link" data-section="classic">Classic Ciphers</a>
+                <a href="#" class="nav-link" data-section="modern">Modern Crypto</a>
+                <a href="#" class="nav-link" data-section="xor">XOR</a>
+                <a href="#" class="nav-link" data-section="rsa">RSA</a>
+                <a href="#" class="nav-link" data-section="aes">AES</a>
+                <a href="#" class="nav-link" data-section="hash">Hashing</a>
+                <a href="#" class="nav-link" data-section="encoding">Encoding</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="intro">
+            <div class="card">
+                <h2>Introduction to Cryptography</h2>
+                <div class="crypto-section">
+                    <p>Cryptography is the practice of secure communication in the presence of adversaries. In CTFs, crypto challenges typically involve:</p>
+                    <ul>
+                        <li>Breaking weak encryption implementations</li>
+                        <li>Exploiting poor key management</li>
+                        <li>Identifying patterns in encoded data</li>
+                        <li>Side-channel attacks</li>
+                        <li>Mathematical attacks on cryptographic primitives</li>
+                    </ul>
+
+                    <div class="sub-topic">
+                        <h3>Common Crypto Challenge Types</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Examples</th>
+                            </tr>
+                            <tr>
+                                <td>Classic Ciphers</td>
+                                <td>Historical encryption methods</td>
+                                <td>Caesar, Vigenère, Substitution</td>
+                            </tr>
+                            <tr>
+                                <td>Modern Symmetric</td>
+                                <td>Block and stream ciphers</td>
+                                <td>AES, DES, RC4</td>
+                            </tr>
+                            <tr>
+                                <td>Asymmetric</td>
+                                <td>Public-key cryptography</td>
+                                <td>RSA, ECC, Diffie-Hellman</td>
+                            </tr>
+                            <tr>
+                                <td>Hashing</td>
+                                <td>One-way functions</td>
+                                <td>MD5, SHA1, bcrypt</td>
+                            </tr>
+                            <tr>
+                                <td>Encoding</td>
+                                <td>Data representation</td>
+                                <td>Base64, Hex, ASCII</td>
+                            </tr>
+                            <tr>
+                                <td>Steganography</td>
+                                <td>Hiding data in other data</td>
+                                <td>LSB, Audio/Image hiding</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Basic Terminology</h3>
+                        <ul>
+                            <li><strong>Plaintext</strong>: Original message</li>
+                            <li><strong>Ciphertext</strong>: Encrypted message</li>
+                            <li><strong>Key</strong>: Secret used for encryption/decryption</li>
+                            <li><strong>Encryption</strong>: Process of converting plaintext to ciphertext</li>
+                            <li><strong>Decryption</strong>: Process of converting ciphertext to plaintext</li>
+                            <li><strong>Cryptanalysis</strong>: Study of breaking cryptographic systems</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <strong>Note:</strong> Many CTF crypto challenges involve recognizing patterns and applying known attacks rather than implementing complex cryptanalysis.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="classic">
+            <div class="card">
+                <h2>Classic Ciphers</h2>
+                <div class="crypto-section">
+                    <p>Historical ciphers that are often vulnerable to frequency analysis and other attacks.</p>
+
+                    <div class="sub-topic">
+                        <h3>Caesar Cipher</h3>
+                        <p>A substitution cipher that shifts letters by a fixed number down the alphabet.</p>
+                        
+                        <div class="examples">
+                            <div class="code-block">
+# Encryption: E(x) = (x + key) mod 26
+# Decryption: D(x) = (x - key) mod 26
+
+# Example with key=3 (ROT3)
+Plaintext:  HELLO
+Ciphertext: KHOOR
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Python implementation
+def caesar(text, shift):
+    result = ""
+    for char in text:
+        if char.isupper():
+            result += chr((ord(char) + shift - 65) % 26 + 65)
+        elif char.islower():
+            result += chr((ord(char) + shift - 97) % 26 + 97)
+        else:
+            result += char
+    return result
+
+# Brute force all rotations
+for i in range(26):
+    print(f"{i}: {caesar(ciphertext, -i)}")
+                        </div>
+
+                        <div class="tool">
+                            <p><span class="tool-name">ROT13</span> - Special case of Caesar cipher with shift=13</p>
+                            <div class="tool-details" id="rot13-details">
+                                <div class="code-block">
+# Linux command
+echo "Uryyb Jbeyq" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+# Output: Hello World
+
+# Python
+import codecs
+codecs.encode("Hello World", 'rot13')
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Vigenère Cipher</h3>
+                        <p>A method of encrypting alphabetic text by using a simple form of polyalphabetic substitution.</p>
+                        
+                        <div class="examples">
+                            <div class="code-block">
+# Using keyword "KEY"
+Plaintext:  ATTACKATDAWN
+Key:        KEYKEYKEYKEY
+Ciphertext: KFAKQKXFAWFE
+
+# Encryption: C_i = (P_i + K_i) mod 26
+# Decryption: P_i = (C_i - K_i) mod 26
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Python implementation
+def vigenere(text, key, decrypt=False):
+    result = []
+    key_len = len(key)
+    for i, char in enumerate(text):
+        if char.isalpha():
+            shift = ord(key[i % key_len].upper()) - 65
+            if decrypt:
+                shift = -shift
+            new_char = chr((ord(char.upper()) - 65 + shift) % 26 + 65)
+            result.append(new_char)
+        else:
+            result.append(char)
+    return ''.join(result)
+                        </div>
+
+                        <div class="note">
+                            <strong>Note:</strong> The Vigenère cipher can be broken using:
+                            <ul>
+                                <li>Kasiski examination (to find key length)</li>
+                                <li>Frequency analysis (once key length is known)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Substitution Cipher</h3>
+                        <p>Each letter in the plaintext is replaced by a letter corresponding to a fixed system.</p>
+                        
+                        <div class="examples">
+                            <div class="code-block">
+# Example substitution key
+A -> Q, B -> G, C -> T, D -> F, E -> L, F -> X, G -> J,
+H -> M, I -> K, J -> W, K -> E, L -> Y, M -> P, N -> R,
+O -> D, P -> S, Q -> Z, R -> U, S -> O, T -> V, U -> A,
+V -> I, W -> N, X -> H, Y -> B, Z -> C
+
+Plaintext:  CRYPTO
+Ciphertext: TUYVSD
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Frequency analysis approach
+1. Identify single-letter words (likely 'A' or 'I')
+2. Look for common patterns (e.g., 'TH', 'HE', 'ING')
+3. Use frequency tables (E is most common in English)
+4. Look for doubled letters (common: LL, SS, EE, TT, etc.)
+                        </div>
+
+                        <div class="tool">
+                            <p><span class="tool-name">quipquip</span> - Automated substitution cipher solver</p>
+                            <div class="tool-details" id="quipquip-details">
+                                <div class="code-block">
+# Online tool: https://quipqiup.com/
+# Or install locally:
+pip install pycipher
+python -m pycipher.substitution --help
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Other Classic Ciphers</h3>
+                        <table>
+                            <tr>
+                                <th>Cipher</th>
+                                <th>Description</th>
+                                <th>Attack Method</th>
+                            </tr>
+                            <tr>
+                                <td>Atbash</td>
+                                <td>Mapping A to Z, B to Y, etc.</td>
+                                <td>Reverse alphabet mapping</td>
+                            </tr>
+                            <tr>
+                                <td>Rail Fence</td>
+                                <td>Writes message in zigzag pattern</td>
+                                <td>Pattern recognition</td>
+                            </tr>
+                            <tr>
+                                <td>Affine</td>
+                                <td>E(x) = (ax + b) mod 26</td>
+                                <td>Brute force (limited keys)</td>
+                            </tr>
+                            <tr>
+                                <td>Playfair</td>
+                                <td>Digraph substitution cipher</td>
+                                <td>Frequency analysis of pairs</td>
+                            </tr>
+                            <tr>
+                                <td>Hill</td>
+                                <td>Matrix-based substitution</td>
+                                <td>Known plaintext attack</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For classic cipher challenges:
+                        <ul>
+                            <li>Look for patterns in the ciphertext (repeated sequences, letter frequencies)</li>
+                            <li>Try online solvers first (like quipqiup, dcode.fr)</li>
+                            <li>Check if it's a combination of ciphers (e.g., ROT13 then substitution)</li>
+                            <li>If all else fails, brute force with all possible keys</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="modern">
+            <div class="card">
+                <h2>Modern Cryptography</h2>
+                <div class="crypto-section">
+                    <p>Contemporary encryption algorithms used in real-world systems, often with CTF-specific vulnerabilities.</p>
+
+                    <div class="sub-topic">
+                        <h3>Symmetric vs. Asymmetric</h3>
+                        <table>
+                            <tr>
+                                <th></th>
+                                <th>Symmetric</th>
+                                <th>Asymmetric</th>
+                            </tr>
+                            <tr>
+                                <td>Keys</td>
+                                <td>Single shared key</td>
+                                <td>Public/private key pair</td>
+                            </tr>
+                            <tr>
+                                <td>Speed</td>
+                                <td>Fast</td>
+                                <td>Slow</td>
+                            </tr>
+                            <tr>
+                                <td>Examples</td>
+                                <td>AES, DES, ChaCha20</td>
+                                <td>RSA, ECC, ElGamal</td>
+                            </tr>
+                            <tr>
+                                <td>CTF Attacks</td>
+                                <td>Weak keys, ECB mode, IV reuse</td>
+                                <td>Small exponents, shared primes</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Block Cipher Modes</h3>
+                        <table>
+                            <tr>
+                                <th>Mode</th>
+                                <th>Description</th>
+                                <th>Vulnerabilities</th>
+                            </tr>
+                            <tr>
+                                <td>ECB</td>
+                                <td>Each block encrypted independently</td>
+                                <td>Pattern leakage, block shuffling</td>
+                            </tr>
+                            <tr>
+                                <td>CBC</td>
+                                <td>Chained with previous ciphertext</td>
+                                <td>Padding oracle, IV reuse</td>
+                            </tr>
+                            <tr>
+                                <td>CTR</td>
+                                <td>Counter mode (turns into stream)</td>
+                                <td>Nonce reuse</td>
+                            </tr>
+                            <tr>
+                                <td>GCM</td>
+                                <td>Authenticated encryption</td>
+                                <td>Nonce reuse</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common Vulnerabilities</h3>
+                        <div class="code-block">
+# ECB mode - identical plaintext blocks produce identical ciphertext
+# Can reveal patterns and allow block reordering
+
+# CBC with predictable IV - allows first block manipulation
+# Especially dangerous if IV = 0 or IV = key
+
+# Padding oracle - error messages reveal padding validity
+# Can decrypt ciphertext byte by byte
+
+# Nonce/IV reuse in CTR/GCM - breaks confidentiality
+# Two-time pad vulnerability
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For modern crypto challenges:
+                        <ul>
+                            <li>Check for weak parameters (small keys, predictable IVs)</li>
+                            <li>Look for error messages that might reveal information</li>
+                            <li>Try to find mathematical weaknesses (in RSA, ECC, etc.)</li>
+                            <li>Consider side-channel attacks (timing, error-based)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="xor">
+            <div class="card">
+                <h2>XOR Encryption</h2>
+                <div class="crypto-section">
+                    <p>XOR (exclusive OR) is a fundamental operation used in many cryptographic systems.</p>
+
+                    <div class="sub-topic">
+                        <h3>Properties of XOR</h3>
+                        <div class="code-block">
+# Basic properties:
+A ⊕ A = 0
+A ⊕ 0 = A
+A ⊕ B = B ⊕ A
+(A ⊕ B) ⊕ C = A ⊕ (B ⊕ C)
+
+# If C = A ⊕ B, then:
+A = B ⊕ C
+B = A ⊕ C
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Single-byte XOR</h3>
+                        <div class="examples">
+                            <div class="code-block">
+# Encrypting 'HELLO' with key 0x3C
+H (0x48) ⊕ 0x3C = 0x74
+E (0x45) ⊕ 0x3C = 0x79
+L (0x4C) ⊕ 0x3C = 0x70
+L (0x4C) ⊕ 0x3C = 0x70
+O (0x4F) ⊕ 0x3C = 0x73
+Ciphertext: 0x74 0x79 0x70 0x70 0x73 ("typps")
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Python brute force
+def single_byte_xor(ciphertext):
+    for key in range(256):
+        plaintext = bytes([b ^ key for b in ciphertext])
+        if b' the ' in plaintext:  # Common English word check
+            return plaintext, key
+    return None, None
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Multi-byte XOR (Repeating Key)</h3>
+                        <div class="examples">
+                            <div class="code-block">
+# Using key 'SECRET'
+Plaintext:  ATTACK AT DAWN
+Key:        SECRE TSECRET
+Ciphertext: ?*?*?* ?* ?*?*
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Finding key length (Kasiski examination)
+1. Look for repeated sequences in ciphertext
+2. Measure distances between them
+3. Key length is likely a divisor of these distances
+
+# Once key length is found, solve as multiple single-byte XORs
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>XOR in Modern Cryptography</h3>
+                        <div class="code-block">
+# AES uses XOR in its round functions
+# Stream ciphers like RC4 use XOR with keystream
+# One-time pad is theoretically unbreakable when:
+1. Key is truly random
+2. Key is same length as plaintext
+3. Key is never reused
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <p><span class="tool-name">xortool</span> - Analyze multi-byte XOR cipher</p>
+                        <div class="tool-details" id="xortool-details">
+                            <div class="code-block">
+# Install
+pip install xortool
+
+# Analyze file
+xortool ciphertext.bin
+
+# Brute force with known characters
+xortool -l 5 -c " " ciphertext.bin
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For XOR challenges:
+                        <ul>
+                            <li>Check if it's single-byte or multi-byte XOR</li>
+                            <li>Look for patterns that might reveal the key length</li>
+                            <li>Try known plaintext attacks if part of the message is known</li>
+                            <li>Use frequency analysis on each key position</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="rsa">
+            <div class="card">
+                <h2>RSA Cryptography</h2>
+                <div class="crypto-section">
+                    <p>RSA is a widely used public-key cryptosystem based on the difficulty of factoring large integers.</p>
+
+                    <div class="sub-topic">
+                        <h3>RSA Basics</h3>
+                        <div class="code-block">
+# Key generation
+1. Choose two large primes p and q
+2. Compute n = p * q (modulus)
+3. Compute φ(n) = (p-1)*(q-1)
+4. Choose e such that 1 < e < φ(n) and gcd(e, φ(n)) = 1
+5. Compute d = e⁻¹ mod φ(n) (private key)
+
+# Encryption: c = mᵉ mod n
+# Decryption: m = cᵈ mod n
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common RSA Attacks</h3>
+                        <div class="code-block">
+# Small modulus - can be factored
+# Small e (e=3) with small message - cube root attack
+# Same n with different e - common modulus attack
+# Same e with different n - Chinese Remainder Theorem
+# Wiener's attack - when d is small
+# Boneh-Durfee - when d < n^0.292
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>CTF RSA Challenges</h3>
+                        <div class="examples">
+                            <div class="code-block">
+# Given n, e, c - factor n to get p and q
+# Given p and q - compute φ(n) and d
+# Given multiple ciphertexts with same modulus
+# Given partial key information (like d modulo φ(n))
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Python solution template
+from Crypto.Util.number import inverse, long_to_bytes
+
+n = 123... # modulus
+e = 65537  # public exponent
+c = 456... # ciphertext
+
+# If p and q are known
+p = ...
+q = ...
+phi = (p-1)*(q-1)
+d = inverse(e, phi)
+m = pow(c, d, n)
+print(long_to_bytes(m))
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced RSA Attacks</h3>
+                        <div class="code-block">
+# Franklin-Reiter related message attack
+# When two messages satisfy m1 = f(m2) mod n
+
+# Coppersmith's short pad attack
+# When messages are related and padding is short
+
+# LSB oracle attack
+# When server reveals if decrypted message is even/odd
+
+# Bleichenbacher's attack
+# PKCS#1 v1.5 padding oracle
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <p><span class="tool-name">RsaCtfTool</span> - Automated RSA attack tool</p>
+                        <div class="tool-details" id="rsactftool-details">
+                            <div class="code-block">
+# Install
+git clone https://github.com/Ganapati/RsaCtfTool
+cd RsaCtfTool
+pip install -r requirements.txt
+
+# Basic usage
+python RsaCtfTool.py -n 123... -e 65537 --uncipher 456...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For RSA challenges:
+                        <ul>
+                            <li>First check if n can be factored (factordb.com)</li>
+                            <li>Look for small exponents (e=3, e=1)</li>
+                            <li>Check for common modulus or related messages</li>
+                            <li>If given multiple ciphertexts, consider CRT</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="aes">
+            <div class="card">
+                <h2>AES Encryption</h2>
+                <div class="crypto-section">
+                    <p>Advanced Encryption Standard (AES) is a symmetric block cipher used worldwide.</p>
+
+                    <div class="sub-topic">
+                        <h3>AES Basics</h3>
+                        <div class="code-block">
+# Key sizes: 128, 192, or 256 bits
+# Block size: 128 bits
+# Rounds: 10 (128-bit), 12 (192-bit), or 14 (256-bit)
+
+# Operations:
+- SubBytes (S-box substitution)
+- ShiftRows (row shifting)
+- MixColumns (column mixing)
+- AddRoundKey (XOR with round key)
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common AES Vulnerabilities</h3>
+                        <div class="code-block">
+# ECB mode - identical plaintext blocks produce identical ciphertext
+# CBC with predictable IV - allows first block manipulation
+# Padding oracle - error messages reveal padding validity
+# Key reuse - same key with different modes/IVs
+# Side-channel attacks - timing, power analysis
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Padding Oracle Attack</h3>
+                        <div class="examples">
+                            <div class="code-block">
+# When server reveals if padding is valid
+# Can decrypt ciphertext without knowing key
+# Works against CBC mode with PKCS#7 padding
+
+# Steps:
+1. Modify ciphertext blocks to guess padding bytes
+2. Use server responses to determine plaintext
+3. Repeat for all blocks
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Python example using pwntools
+from pwn import *
+
+def oracle(c):
+    r = remote('target', 1234)
+    r.send(c.hex())
+    resp = r.recvline()
+    r.close()
+    return b"success" in resp
+
+# Implement padding oracle attack...
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <p><span class="tool-name">padbuster</span> - Automated padding oracle tool</p>
+                        <div class="tool-details" id="padbuster-details">
+                            <div class="code-block">
+# Usage
+padbuster http://target/decrypt?c=XXXX XXXX 8 -encoding 0 -error "Invalid padding"
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For AES challenges:
+                        <ul>
+                            <li>First identify the mode of operation</li>
+                            <li>Check if IV is predictable or reused</li>
+                            <li>Look for error messages about padding</li>
+                            <li>Try bit-flipping attacks in CBC mode</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="hash">
+            <div class="card">
+                <h2>Hashing Algorithms</h2>
+                <div class="crypto-section">
+                    <p>Cryptographic hash functions map data of arbitrary size to fixed-size values.</p>
+
+                    <div class="sub-topic">
+                        <h3>Common Hash Functions</h3>
+                        <table>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Output Size</th>
+                                <th>Security Status</th>
+                            </tr>
+                            <tr>
+                                <td>MD5</td>
+                                <td>128 bits</td>
+                                <td>Broken (collisions)</td>
+                            </tr>
+                            <tr>
+                                <td>SHA-1</td>
+                                <td>160 bits</td>
+                                <td>Broken (collisions)</td>
+                            </tr>
+                            <tr>
+                                <td>SHA-256</td>
+                                <td>256 bits</td>
+                                <td>Secure</td>
+                            </tr>
+                            <tr>
+                                <td>SHA-3</td>
+                                <td>Variable</td>
+                                <td>Secure</td>
+                            </tr>
+                            <tr>
+                                <td>bcrypt</td>
+                                <td>Variable</td>
+                                <td>Secure</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Hash Attacks</h3>
+                        <div class="code-block">
+# Rainbow tables - precomputed hash chains
+# Dictionary attacks - common passwords
+# Collision attacks - two inputs with same hash
+# Length extension - for Merkle-Damgård hashes
+
+# Example: MD5 collision
+# Two different files with same MD5 hash
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Password Cracking</h3>
+                        <div class="examples">
+                            <div class="code-block">
+# Using hashcat
+hashcat -m 0 -a 0 hashes.txt rockyou.txt
+
+# Common hashcat modes:
+0 = MD5
+100 = SHA1
+1400 = SHA256
+3200 = bcrypt
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+# Using John the Ripper
+john --format=raw-md5 hashes.txt
+john --wordlist=rockyou.txt hashes.txt
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <p><span class="tool-name">hash-identifier</span> - Identify hash types</p>
+                        <div class="tool-details" id="hashid-details">
+                            <div class="code-block">
+# Install
+sudo apt install hash-identifier
+
+# Usage
+hash-identifier
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For hash challenges:
+                        <ul>
+                            <li>First identify the hash type (length, charset)</li>
+                            <li>Check online databases (crackstation.net)</li>
+                            <li>Try common passwords if it's a single hash</li>
+                            <li>For custom algorithms, look for weaknesses</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="encoding">
+            <div class="card">
+                <h2>Encoding Schemes</h2>
+                <div class="crypto-section">
+                    <p>Methods for representing data in different formats (not encryption).</p>
+
+                    <div class="sub-topic">
+                        <h3>Common Encoding Types</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Recognition Pattern</th>
+                            </tr>
+                            <tr>
+                                <td>Base64</td>
+                                <td>6-bit chunks to ASCII (A-Z,a-z,0-9,+,/,=)</td>
+                                <td>SGVsbG8=</td>
+                                <td>Ends with = or ==, alphanumeric with +/</td>
+                            </tr>
+                            <tr>
+                                <td>Hex</td>
+                                <td>Binary to hex digits (0-9,a-f)</td>
+                                <td>48656c6c6f</td>
+                                <td>Even length, only 0-9 and a-f</td>
+                            </tr>
+                            <tr>
+                                <td>ASCII Codes</td>
+                                <td>Decimal character codes</td>
+                                <td>72 101 108 108 111</td>
+                                <td>Numbers 32-126 separated by spaces</td>
+                            </tr>
+                            <tr>
+                                <td>URL Encoding</td>
+                                <td>Percent-encoded characters</td>
+                                <td>%48%65%6c%6c%6f</td>
+                                <td>% followed by two hex digits</td>
+                            </tr>
+                            <tr>
+                                <td>Binary</td>
+                                <td>Base-2 representation (0-1)</td>
+                                <td>01001000 01100101...</td>
+                                <td>Groups of 8 bits (sometimes space-separated)</td>
+                            </tr>
+                            <tr>
+                                <td>Morse Code</td>
+                                <td>Dots and dashes</td>
+                                <td>.... . .-.. .-.. ---</td>
+                                <td>Combination of . and - with separators</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Encoding/Decoding Techniques</h3>
+                        <div class="code-block">
+# Base64 (Linux)
+echo "Hello" | base64      # Encode
+echo "SGVsbG8=" | base64 -d  # Decode
+
+# Hex (Python)
+"Hello".encode('hex')      # Encode
+"48656c6c6f".decode('hex') # Decode
+
+# ASCII codes (Python)
+' '.join(str(ord(c)) for c in "Hello")  # Encode
+''.join(chr(int(c)) for c in "72 101 108 108 111".split())  # Decode
+
+# URL encoding (Python)
+import urllib.parse
+urllib.parse.quote("Hello World!")  # Encode
+urllib.parse.unquote("%48%65%6c%6c%6f")  # Decode
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>CTF Encoding Challenges</h3>
+                        <div class="examples">
+                            <div class="code-block">
+# Multiple encodings stacked
+# Example: Hex → Base64 → ASCII codes → Binary
+Original: Hello
+Hex: 48656c6c6f
+Base64 of hex: NDg2NTZjNmM2Zg==
+ASCII codes of Base64: 78 52 103 54 78 84 90 106 78 109 67 50 90 103 61 61
+Binary of ASCII codes: 01001110 00110100 01100111 00110110...
+
+# Custom encoding schemes
+# Example: A=1, B=2, ..., Z=26
+HELLO → 8 5 12 12 15
+
+# Steganography in encoding
+# Example: LSB in Base64 encoded image
+                        </div>
+                        </div>
+
+                        <div class="code-block">
+# Python multi-step decoding example
+import base64
+
+def decode_layered(encoded_str):
+    # Step 1: Base64 decode
+    step1 = base64.b64decode(encoded_str).decode()
+    # Step 2: Hex decode
+    step2 = bytes.fromhex(step1).decode()
+    # Step 3: Reverse string
+    return step2[::-1]
+
+encoded = "NjQ2NTZlNmM2ZTY5NzQ="
+print(decode_layered(encoded))  # Output: "Hello"
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Encoding Tools</h3>
+                        <p><span class="tool-name">CyberChef</span> - Swiss army knife for encoding/decoding</p>
+                        <div class="tool-details" id="cyberchef-details">
+                            <div class="code-block">
+# Web version: https://gchq.github.io/CyberChef/
+# Features:
+- 200+ operations including all common encodings
+- Magic mode detects encoding automatically
+- Recipe system for multi-step operations
+- File processing support
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">dcode.fr</span> - Online cipher/encoding identifier</p>
+                        <div class="tool-details" id="dcode-details">
+                            <div class="code-block">
+# Website: https://www.dcode.fr/cipher-identifier
+# Features:
+- Automatic cipher detection
+- Extensive database of cipher/encoding types
+- Online tools for each cipher type
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For encoding challenges:
+                        <ul>
+                            <li>Look for patterns in the encoded data (padding, character sets)</li>
+                            <li>Try common encoding combinations (Base64 → Hex → ASCII)</li>
+                            <li>Check for steganography in encoded data (LSB, whitespace patterns)</li>
+                            <li>Use automated tools first (CyberChef Magic mode)</li>
+                            <li>When stuck, try all possible single-step decodings systematically</li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced Encoding Techniques</h3>
+                        <div class="code-block">
+# Non-standard Base64 variants:
+- Base64URL (uses - and _ instead of + and /)
+- Custom alphabets (e.g., different character set)
+
+# Hex variations:
+- No separators vs. space-separated vs. colon-separated
+- Uppercase vs lowercase (48656C6C6F vs 48656c6c6f)
+
+# ASCII code variations:
+- Decimal (72 101 108 108 111)
+- Hexadecimal (0x48 0x65 0x6c 0x6c 0x6f)
+- Octal (0o110 0o145 0o154 0o154 0o157)
+- Binary (0b1001000 0b1100101...)
+
+# Multi-byte encodings:
+- UTF-8 (variable width)
+- UTF-16 (2 bytes per char)
+- UTF-32 (4 bytes per char)
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Encoding Detection Challenge</h3>
+                        <div class="examples">
+                            <p>What encoding is this?</p>
+                            <div class="code-block">
+01001000 01100101 01101100 01101100 01101111 00100000 01010111 01101111 
+01110010 01101100 01100100 00100001
+                            </div>
+                            <div class="code-block">
+# Solution steps:
+1. Recognize as binary (groups of 8 bits)
+2. Convert each byte to ASCII:
+   01001000 → H
+   01100101 → e
+   01101100 → l
+   ...
+3. Final message: "Hello World!"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="tools">
+            <div class="card">
+                <h2>Cryptography Tools</h2>
+                <div class="crypto-section">
+                    <p>Essential tools for solving cryptography challenges in CTFs.</p>
+
+                    <div class="sub-topic">
+                        <h3>General Purpose Tools</h3>
+                        <div class="tool">
+                            <p><span class="tool-name">CyberChef</span> - Web-based encoding/decoding toolkit</p>
+                            <div class="tool-details" id="cyberchef-details">
+                                <div class="code-block">
+# Features:
+- 200+ operations including encoding, encryption, compression
+- Magic mode automatically detects encoding
+- Recipe system for chaining operations
+- File processing support
+
+# Website: https://gchq.github.io/CyberChef/
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tool">
+                            <p><span class="tool-name">John the Ripper</span> - Password cracking tool</p>
+                            <div class="tool-details" id="john-details">
+                                <div class="code-block">
+# Install on Kali Linux
+sudo apt install john
+
+# Basic usage
+john --format=raw-md5 hashes.txt
+john --wordlist=rockyou.txt hashes.txt
+
+# Common formats:
+raw-md5, raw-sha1, raw-sha256
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Specialized Crypto Tools</h3>
+                        <div class="tool">
+                            <p><span class="tool-name">RsaCtfTool</span> - RSA attack tool</p>
+                            <div class="tool-details" id="rsatool-details">
+                                <div class="code-block">
+# Install
+git clone https://github.com/Ganapati/RsaCtfTool
+cd RsaCtfTool
+pip install -r requirements.txt
+
+# Basic usage
+python RsaCtfTool.py -n 123... -e 65537 --uncipher 456...
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tool">
+                            <p><span class="tool-name">hashcat</span> - Advanced password recovery</p>
+                            <div class="tool-details" id="hashcat-details">
+                                <div class="code-block">
+# Install on Kali Linux
+sudo apt install hashcat
+
+# Basic usage
+hashcat -m 0 -a 0 hashes.txt rockyou.txt
+
+# Common hash modes:
+0 = MD5
+100 = SHA1
+1400 = SHA256
+3200 = bcrypt
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Online Resources</h3>
+                        <table>
+                            <tr>
+                                <th>Resource</th>
+                                <th>Description</th>
+                                <th>URL</th>
+                            </tr>
+                            <tr>
+                                <td>Factordb</td>
+                                <td>Factorize large numbers</td>
+                                <td>http://factordb.com/</td>
+                            </tr>
+                            <tr>
+                                <td>dCode</td>
+                                <td>Cipher identifier & tools</td>
+                                <td>https://www.dcode.fr/</td>
+                            </tr>
+                            <tr>
+                                <td>Cryptii</td>
+                                <td>Web-based encoding/decoding</td>
+                                <td>https://cryptii.com/</td>
+                            </tr>
+                            <tr>
+                                <td>Boxentriq</td>
+                                <td>Cipher identifier</td>
+                                <td>https://www.boxentriq.com/code-breaking</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> When using crypto tools:
+                        <ul>
+                            <li>Always try the simplest solution first</li>
+                            <li>Check tool documentation for advanced options</li>
+                            <li>Combine tools for multi-step challenges</li>
+                            <li>Save your work frequently</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>CTF Cryptography Tips</h2>
+                <div class="crypto-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ul>
+                            <li>Identify the cipher/encoding first</li>
+                            <li>Look for patterns in the ciphertext</li>
+                            <li>Check for weak keys or parameters</li>
+                            <li>Try known plaintext attacks if possible</li>
+                            <li>When stuck, take a break and come back with fresh eyes</li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common CTF Crypto Flags</h3>
+                        <div class="code-block">
+# Typical flag formats:
+flag{Th1s_1s_4_fl4g}
+FLAG{Th1s_1s_4_fl4g}
+CTF{Th1s_1s_4_fl4g}
+THM{Th1s_1s_4_fl4g}
+HTB{Th1s_1s_4_fl4g}
+
+# Sometimes encoded in:
+- Base64: ZmxhZ3tUaDFzXzFzXzRfZmw0Z30=
+- Hex: 666c61677b546831735f31735f345f666c34677d
+- ASCII codes: 102 108 97 103 123 84 104 49 115 95 49 115 95 52 95 102 108 52 103 125
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Challenge Types</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Approach</th>
+                                <th>Tools</th>
+                            </tr>
+                            <tr>
+                                <td>Classic Ciphers</td>
+                                <td>Frequency analysis, brute force</td>
+                                <td>dCode, quipqiup</td>
+                            </tr>
+                            <tr>
+                                <td>Modern Encryption</td>
+                                <td>Parameter analysis, math attacks</td>
+                                <td>RsaCtfTool, SageMath</td>
+                            </tr>
+                            <tr>
+                                <td>Hashing</td>
+                                <td>Rainbow tables, dictionary attacks</td>
+                                <td>hashcat, John</td>
+                            </tr>
+                            <tr>
+                                <td>Encoding</td>
+                                <td>Pattern recognition, layered decoding</td>
+                                <td>CyberChef, Python</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Useful Wordlists</h3>
+                        <div class="code-block">
+# Common wordlists location in Kali Linux:
+/usr/share/wordlists/
+
+# Popular wordlists:
+rockyou.txt
+fasttrack.txt
+darkweb2017-top10000.txt
+common-passwords-win.txt
+
+# Custom wordlists:
+cewl -d 2 -m 5 -w custom.txt https://example.com
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Quick Checks</h3>
+                        <ul>
+                            <li>Try Base64 decoding first on any mysterious string</li>
+                            <li>Check if numbers can be converted to ASCII</li>
+                            <li>Look for repeating patterns in ciphertext</li>
+                            <li>Try XOR with common keys (0x55, 'CTF', 'flag')</li>
+                            <li>Check for embedded data in files (binwalk, strings)</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <strong>Remember:</strong> Cryptography challenges often combine multiple techniques. The solution might require several layers of decoding/decryption.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Cryptography Guide</p>
+            <p>Remember: Always practice ethical hacking with proper authorization.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.crypto-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Show tool details
+        document.querySelectorAll('.tool-name').forEach(tool => {
+            tool.addEventListener('click', () => {
+                const details = tool.parentNode.nextElementSibling;
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.crypto-section').style.display = 'block';
+    </script>
+</body>
+</html>
