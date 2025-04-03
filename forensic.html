@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forensics | CTF Learning Hub</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f8f8;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        header {
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff9800;
+            text-transform: uppercase;
+        }
+        h2 {
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+            padding-left: 10px;
+            margin-top: 40px;
+            cursor: pointer;
+        }
+        h2::before {
+            content: "+ ";
+            color: #ff9800;
+        }
+        h2.active::before {
+            content: "- ";
+        }
+        h3 {
+            color: #2196f3;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .forensic-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+            border-left: 3px solid #ff9800;
+            white-space: pre-wrap;
+            word-break: break-all;
+            tab-size: 4;
+        }
+        .note {
+            background-color: #33322d;
+            border-left: 4px solid #ffd700;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #3a1d1d;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tool {
+            background-color: #1e2b3a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ff9800;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        .sub-topic {
+            margin-left: 20px;
+            border-left: 2px solid #444;
+            padding-left: 15px;
+        }
+        .payload-list {
+            columns: 3;
+            column-gap: 20px;
+        }
+        .payload-item {
+            break-inside: avoid;
+            margin-bottom: 10px;
+        }
+        .show-more {
+            color: #ff9800;
+            cursor: pointer;
+            text-decoration: underline;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        .more-payloads {
+            display: none;
+        }
+        .tool-name {
+            color: #4caf50;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .tool-details {
+            display: none;
+            margin-top: 10px;
+        }
+        .vulnerable-code {
+            background-color: #3a1d1d;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #f44336;
+        }
+        .linux-option {
+            color: #2196f3;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-right: 15px;
+        }
+        .linux-install {
+            display: none;
+            margin-top: 10px;
+        }
+        .examples {
+            background-color: #1e2b3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #2196f3;
+        }
+        .ctf-tip {
+            background-color: #2d1e3a;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .flag-format {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff9800;
+            background-color: #2d2d2d;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .file-type {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .hex-table {
+            font-family: monospace;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .hex-table td, .hex-table th {
+            border: 1px solid #444;
+            padding: 3px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .hex-table th {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Digital Forensics</h1>
+            <p>Master the art of extracting hidden information from digital artifacts</p>
+            <nav>
+                <a href="ctf.html">Home</a>
+                <a href="#" class="nav-link" data-section="intro">Intro</a>
+                <a href="#" class="nav-link" data-section="file-analysis">File Analysis</a>
+                <a href="#" class="nav-link" data-section="memory">Memory Forensics</a>
+                <a href="#" class="nav-link" data-section="network">Network Forensics</a>
+                <a href="#" class="nav-link" data-section="stego">Steganography</a>
+                <a href="#" class="nav-link" data-section="disk">Disk Forensics</a>
+                <a href="#" class="nav-link" data-section="mobile">Mobile Forensics</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="intro">
+            <div class="card">
+                <h2>Introduction to Forensics</h2>
+                <div class="forensic-section">
+                    <p>Digital forensics involves investigating digital devices to find, analyze, and present evidence. In CTFs, forensics challenges typically involve:</p>
+                    <ul>
+                        <li>Analyzing file formats and metadata</li>
+                        <li>Recovering deleted or hidden data</li>
+                        <li>Examining memory dumps</li>
+                        <li>Investigating network traffic</li>
+                        <li>Solving steganography challenges</li>
+                        <li>Analyzing disk images</li>
+                        <li>Extracting mobile device data</li>
+                        <li>Timeline analysis of system events</li>
+                    </ul>
+
+                    <div class="sub-topic">
+                        <h3>Common Forensics Challenge Types</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Example Techniques</th>
+                                <th>Common Tools</th>
+                            </tr>
+                            <tr>
+                                <td>File Analysis</td>
+                                <td>Examining file contents and metadata</td>
+                                <td>File carving, magic numbers, strings</td>
+                                <td>binwalk, xxd, exiftool</td>
+                            </tr>
+                            <tr>
+                                <td>Memory Forensics</td>
+                                <td>Analyzing RAM dumps</td>
+                                <td>Process analysis, network connections, registry</td>
+                                <td>Volatility, Rekall</td>
+                            </tr>
+                            <tr>
+                                <td>Network Forensics</td>
+                                <td>Examining network traffic</td>
+                                <td>PCAP analysis, protocol dissection</td>
+                                <td>Wireshark, tshark</td>
+                            </tr>
+                            <tr>
+                                <td>Steganography</td>
+                                <td>Finding hidden data</td>
+                                <td>LSB, spectrograms, file carving</td>
+                                <td>steghide, stegsolve</td>
+                            </tr>
+                            <tr>
+                                <td>Disk Forensics</td>
+                                <td>Analyzing disk images</td>
+                                <td>Partition recovery, file system analysis</td>
+                                <td>Autopsy, The Sleuth Kit</td>
+                            </tr>
+                            <tr>
+                                <td>Mobile Forensics</td>
+                                <td>Extracting mobile device data</td>
+                                <td>App analysis, SQLite extraction</td>
+                                <td>Andriller, DB Browser</td>
+                            </tr>
+                            <tr>
+                                <td>Log Analysis</td>
+                                <td>Examining system logs</td>
+                                <td>Timeline reconstruction, event correlation</td>
+                                <td>log2timeline, Elasticsearch</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Forensic Methodology</h3>
+                        <div class="code-block">
+1. Identification: Recognize potential sources of evidence
+2. Preservation: Create forensic copies (never work on original)
+3. Analysis: Examine evidence using appropriate tools
+4. Documentation: Record findings and methods
+5. Presentation: Summarize conclusions
+
+# CTF-Specific Approach:
+1. Identify the challenge type (file, memory, network, etc.)
+2. Use appropriate tools for initial analysis
+3. Look for anomalies or hidden data
+4. Extract potential flags or interesting artifacts
+5. Verify findings and document the process
+6. If stuck, try alternative approaches or tools
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Forensic Principles</h3>
+                        <div class="code-block">
+# Order of Volatility (most to least volatile)
+1. CPU registers, cache
+2. Memory (RAM)
+3. Network connections
+4. Running processes
+5. Disk storage
+6. Remote logging and monitoring data
+7. Physical configuration, network topology
+8. Archival media
+
+# Forensic Soundness Requirements:
+- Evidence must be preserved without alteration
+- All actions must be documented
+- Methods must be repeatable
+- Analysis must be verifiable
+                        </div>
+                    </div>
+
+                    <div class="note">
+                        <strong>Note:</strong> Many forensics challenges involve multiple steps - the flag might be hidden behind several layers of extraction or decoding.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="file-analysis">
+            <div class="card">
+                <h2>File Analysis</h2>
+                <div class="forensic-section">
+                    <p>Examining files for hidden information, metadata, and unusual characteristics.</p>
+
+                    <div class="sub-topic">
+                        <h3>Initial Analysis Commands</h3>
+                        <div class="code-block">
+# Basic file information
+file mystery.bin          # Determine file type
+stat file.txt            # View file timestamps
+exiftool image.jpg       # View metadata (comprehensive)
+identify -verbose image.png # Image metadata (ImageMagick)
+pdfinfo document.pdf     # PDF metadata
+
+# Content extraction
+strings file.bin         # Extract printable strings (basic)
+strings -e l file.bin    # Extract 16-bit little-endian strings
+strings -e b file.bin    # Extract 16-bit big-endian strings
+xxd file.bin | less      # Hex dump view
+hexdump -C file.bin | less # Alternative hex dump
+
+# For archives and containers:
+binwalk file.bin         # Search for embedded files
+7z l archive.rar         # List archive contents
+unzip -l archive.zip     # List ZIP contents
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common File Signatures (Magic Numbers)</h3>
+                        <table class="hex-table">
+                            <tr>
+                                <th>File Type</th>
+                                <th>Extension</th>
+                                <th>Magic Number (Hex)</th>
+                                <th>ASCII Representation</th>
+                            </tr>
+                            <tr>
+                                <td>PNG Image</td>
+                                <td>.png</td>
+                                <td>89 50 4E 47 0D 0A 1A 0A</td>
+                                <td>‰PNG....</td>
+                            </tr>
+                            <tr>
+                                <td>ZIP Archive</td>
+                                <td>.zip</td>
+                                <td>50 4B 03 04</td>
+                                <td>PK..</td>
+                            </tr>
+                            <tr>
+                                <td>PDF Document</td>
+                                <td>.pdf</td>
+                                <td>25 50 44 46</td>
+                                <td>%PDF</td>
+                            </tr>
+                            <tr>
+                                <td>JPEG Image</td>
+                                <td>.jpg</td>
+                                <td>FF D8 FF E0</td>
+                                <td>ÿØÿà</td>
+                            </tr>
+                            <tr>
+                                <td>GIF Image</td>
+                                <td>.gif</td>
+                                <td>47 49 46 38</td>
+                                <td>GIF8</td>
+                            </tr>
+                            <tr>
+                                <td>Windows Executable</td>
+                                <td>.exe</td>
+                                <td>4D 5A</td>
+                                <td>MZ</td>
+                            </tr>
+                            <tr>
+                                <td>ELF Executable</td>
+                                <td>(none)</td>
+                                <td>7F 45 4C 46</td>
+                                <td>.ELF</td>
+                            </tr>
+                            <tr>
+                                <td>BMP Image</td>
+                                <td>.bmp</td>
+                                <td>42 4D</td>
+                                <td>BM</td>
+                            </tr>
+                            <tr>
+                                <td>RAR Archive</td>
+                                <td>.rar</td>
+                                <td>52 61 72 21</td>
+                                <td>Rar!</td>
+                            </tr>
+                            <tr>
+                                <td>GZIP Archive</td>
+                                <td>.gz</td>
+                                <td>1F 8B</td>
+                                <td>..</td>
+                            </tr>
+                            <tr>
+                                <td>Windows Shortcut</td>
+                                <td>.lnk</td>
+                                <td>4C 00 00 00</td>
+                                <td>L...</td>
+                            </tr>
+                            <tr>
+                                <td>Microsoft Office</td>
+                                <td>.docx, .pptx</td>
+                                <td>50 4B 03 04</td>
+                                <td>PK..</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>File Carving Techniques</h3>
+                        <div class="code-block">
+# Using foremost (carves based on headers/footers)
+foremost -i disk.img -o output_dir
+foremost -t jpg,pdf,zip -i file.bin -o output # Specific types
+
+# Using binwalk (signature based)
+binwalk -e file.bin              # Auto-extract
+binwalk -D 'zip archive:zip' file.bin # Extract specific type
+binwalk -Me file.bin             # Recursive extraction
+
+# Manual carving with dd
+dd if=file.bin of=extracted.jpg bs=1 skip=1234 count=5678
+
+# Using photorec (for deleted files)
+photorec /dev/sdX
+photorec /d output_dir /f file_to_recover
+
+# Using scalpel (configurable carving)
+scalpel -c /etc/scalpel.conf -o output file.bin
+                        </div>
+
+                        <div class="code-block">
+# Carving workflow:
+1. Identify potential file types in the binary (binwalk, strings)
+2. Note the offsets of potential file headers
+3. Determine the file size (either from metadata or search for footer)
+4. Extract the file using dd or specialized tools
+5. Verify the extracted file integrity
+6. Repeat for all potential files
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced File Analysis Techniques</h3>
+                        <div class="code-block">
+# XOR Analysis (for obfuscated files)
+xorsearch -s file.bin "flag{"
+xorstrings file.bin      # Find strings in XORed files
+
+# Entropy Analysis (identify encrypted/compressed regions)
+binwalk -E file.bin      # Entropy graph
+ent file.bin             # Calculate entropy (0-8 scale)
+
+# File Difference Analysis
+cmp -l file1.bin file2.bin # Byte-by-byte comparison
+xxd file1.bin > file1.hex
+xxd file2.bin > file2.hex
+diff file1.hex file2.hex
+
+# Malware Analysis Tools
+peframe malware.exe      # PE file analysis
+rabin2 -zz malware.bin   # Extract strings and more
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>File Analysis Tools</h3>
+                        <p><span class="tool-name">binwalk</span> - Firmware analysis tool</p>
+                        <div class="tool-details" id="binwalk-details">
+                            <div class="code-block">
+# Install
+sudo apt install binwalk
+
+# Basic usage
+binwalk file.bin          # Analyze file signatures
+binwalk -e file.bin       # Extract known file types
+binwalk -Me file.bin      # Recursive extraction
+binwalk -E file.bin       # Entropy analysis
+binwalk -W file1.bin file2.bin # Compare files
+
+# Advanced options:
+binwalk --matryoshka --depth=5 file.bin # Deep recursive scan
+binwalk -A firmware.bin   # Architecture analysis
+binwalk -Y file.bin       # Fast analysis mode
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">xxd</span> - Hex dump viewer</p>
+                        <div class="tool-details" id="xxd-details">
+                            <div class="code-block">
+# View hex dump
+xxd file.bin | less
+xxd -g 1 file.bin        # Single-byte grouping
+xxd -s 0x100 -l 256 file.bin # Show 256 bytes at offset 0x100
+
+# Search for patterns
+xxd file.bin | grep "504b"  # Search for ZIP header
+xxd -p file.bin | tr -d '\n' | grep -o "504b.*" # Extract from offset
+
+# Convert hex back to binary
+xxd -r hexdump.txt > recovered.bin
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">foremost</span> - File carving tool</p>
+                        <div class="tool-details" id="foremost-details">
+                            <div class="code-block">
+# Install
+sudo apt install foremost
+
+# Basic usage
+foremost -i disk.img -o output_dir
+foremost -t jpg,pdf,doc -i file.bin -o output
+
+# Configuration
+/etc/foremost.conf       # Define custom file headers/footers
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For file analysis challenges:
+                        <ul>
+                            <li>Always check file headers and footers first</li>
+                            <li>Look for embedded files or hidden data</li>
+                            <li>Try multiple tools - sometimes one misses what another finds</li>
+                            <li>Check both the beginning and end of files for anomalies</li>
+                            <li>Don't ignore file metadata (EXIF, PDF properties, etc.)</li>
+                            <li>If a file appears corrupted, try fixing headers or removing garbage data</li>
+                            <li>For password-protected files, try common passwords or empty passwords</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="memory">
+            <div class="card">
+                <h2>Memory Forensics</h2>
+                <div class="forensic-section">
+                    <p>Analyzing memory dumps to find processes, network connections, and hidden data.</p>
+
+                    <div class="sub-topic">
+                        <h3>Volatility Framework</h3>
+                        <div class="code-block">
+# Basic Volatility commands (version 2.x)
+volatility -f memory.dmp imageinfo              # Identify profile
+volatility -f memory.dmp --profile=Win7SP1 pslist  # List processes
+volatility -f memory.dmp --profile=Win7SP1 pstree  # Process tree
+volatility -f memory.dmp --profile=Win7SP1 netscan # Network connections
+volatility -f memory.dmp --profile=Win7SP1 filescan # Scan for files
+volatility -f memory.dmp --profile=Win7SP1 dumpfiles -Q 0x1234 -D output/  # Dump file
+volatility -f memory.dmp --profile=Win7SP1 memdump -p 1234 -D output/ # Dump process memory
+
+# Volatility 3 commands (new version)
+vol.py -f memory.dmp windows.info
+vol.py -f memory.dmp windows.pslist
+vol.py -f memory.dmp windows.netscan
+vol.py -f memory.dmp windows.dumpfiles --physaddr 0x1234 -D output/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Memory Analysis Cheat Sheet</h3>
+                        <table>
+                            <tr>
+                                <th>Category</th>
+                                <th>Command</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td rowspan="3">Process Analysis</td>
+                                <td>pslist</td>
+                                <td>List active processes</td>
+                            </tr>
+                            <tr>
+                                <td>pstree</td>
+                                <td>Process tree showing parent/child</td>
+                            </tr>
+                            <tr>
+                                <td>dlllist</td>
+                                <td>List DLLs loaded by process</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="3">Network</td>
+                                <td>netscan</td>
+                                <td>Active network connections</td>
+                            </tr>
+                            <tr>
+                                <td>connscan</td>
+                                <td>TCP connection objects</td>
+                            </tr>
+                            <tr>
+                                <td>sockets</td>
+                                <td>Open sockets</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="4">System Info</td>
+                                <td>cmdline</td>
+                                <td>Process command lines</td>
+                            </tr>
+                            <tr>
+                                <td>envars</td>
+                                <td>Process environment variables</td>
+                            </tr>
+                            <tr>
+                                <td>clipboard</td>
+                                <td>Clipboard contents</td>
+                            </tr>
+                            <tr>
+                                <td>screenshot</td>
+                                <td>Save process memory as PNG</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="3">Malware</td>
+                                <td>malfind</td>
+                                <td>Find hidden/injected code</td>
+                            </tr>
+                            <tr>
+                                <td>apihooks</td>
+                                <td>Detect API hooks</td>
+                            </tr>
+                            <tr>
+                                <td>yarascan</td>
+                                <td>Scan with YARA rules</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Memory Analysis Workflow</h3>
+                        <div class="code-block">
+1. Identify the memory profile (imageinfo)
+2. Check running processes (pslist, pstree)
+   - Look for unusual process names or paths
+   - Check for processes with no parent or unusual parents
+3. Examine network activity (netscan, connscan)
+   - Look for unusual connections
+   - Check for listening ports
+4. Scan for files (filescan, dumpfiles)
+   - Look for interesting file names or extensions
+5. Check for malicious activity (malfind, apihooks)
+   - Look for injected code or hooked functions
+6. Dump suspicious processes (memdump, procdump)
+   - Analyze dumped memory with strings or other tools
+7. Check registry (hivelist, printkey)
+   - Look for persistence mechanisms
+   - Check for unusual registry values
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced Memory Forensics</h3>
+                        <div class="code-block">
+# Timeline creation
+vol.py -f memory.dmp timeliner.Timeliner --output=body
+vol.py -f memory.dmp timeliner.Timeliner --output=body | mactime -b - -d -z UTC > timeline.csv
+
+# YARA rule scanning
+vol.py -f memory.dmp yarascan.YaraScan -Y /rules/malware.yar
+
+# Detecting rootkits
+vol.py -f memory.dmp ssdt.SSDT
+vol.py -f memory.dmp driverirp.DriverIrp
+vol.py -f memory.dmp callbacks.Callbacks
+
+# Extracting executables
+vol.py -f memory.dmp procdump.ProcDump -p 1234 -D output/
+vol.py -f memory.dmp moddump.ModDump -p 1234 -D output/
+
+# Browser artifact analysis
+vol.py -f memory.dmp chromehistory.ChromeHistory
+vol.py -f memory.dmp firefoxhistory.FirefoxHistory
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Memory Analysis Tools</h3>
+                        <p><span class="tool-name">Volatility</span> - Advanced memory analysis</p>
+                        <div class="tool-details" id="volatility-details">
+                            <div class="code-block">
+# Install Volatility 2.x
+sudo apt install volatility
+
+# Install Volatility 3 (recommended)
+git clone https://github.com/volatilityfoundation/volatility3
+cd volatility3
+python3 -m pip install -r requirements.txt
+
+# Install plugins
+git clone https://github.com/superponible/volatility-plugins
+cp -R volatility-plugins/* volatility3/volatility/plugins/
+
+# Basic usage (Volatility 3)
+python3 vol.py -f memory.dmp windows.info
+python3 vol.py -f memory.dmp windows.pslist
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">Rekall</span> - Memory analysis framework</p>
+                        <div class="tool-details" id="rekall-details">
+                            <div class="code-block">
+# Install
+pip install rekall-agent rekall
+
+# Basic usage
+rekall -f memory.dmp pslist
+rekall -f memory.dmp netscan
+
+# Profile download
+rekall --profile=Win10x64_18362.json -f memory.dmp pslist
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">Memoryze</span> - Memory acquisition and analysis</p>
+                        <div class="tool-details" id="memoryze-details">
+                            <div class="code-block">
+# Part of Mandiant Redline
+# Download from: https://www.mandiant.com/resources/downloads/redline
+# Features:
+- Memory acquisition
+- Live memory analysis
+- Timeline creation
+- IOC scanning
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For memory challenges:
+                        <ul>
+                            <li>Look for unusual process names or paths</li>
+                            <li>Check for processes with no parent or unusual parents</li>
+                            <li>Search for IP addresses or domain names in process memory</li>
+                            <li>Examine suspicious DLLs or injected code</li>
+                            <li>Check for hidden processes or modules</li>
+                            <li>Look for API hooks or other malware artifacts</li>
+                            <li>Don't forget to check clipboard contents and command history</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Additional sections for Network Forensics, Steganography, Disk Forensics, Mobile Forensics -->
+        <!-- Each follows the same pattern with tables, code blocks, tools, and CTF tips -->
+        
+        <section id="network">
+            <div class="card">
+                <h2>Network Forensics</h2>
+                <div class="forensic-section">
+                    <p>Analyzing network traffic captures to find hidden information.</p>
+
+                    <div class="sub-topic">
+                        <h3>PCAP Analysis Basics</h3>
+                        <div class="code-block">
+# Basic tshark commands
+tshark -r capture.pcap               # Summarize traffic
+tshark -r capture.pcap -Y "http"     # Filter HTTP traffic
+tshark -r capture.pcap -T fields -e frame.number -e ip.src -e ip.dst # Show IPs
+tshark -r capture.pcap -z io,phs     # Protocol hierarchy
+tshark -r capture.pcap -qz conv,ip   # IP conversations
+tshark -r capture.pcap -qz conv,tcp  # TCP conversations
+
+# Extract files from pcap
+foremost -i capture.pcap -o output/
+binwalk -e capture.pcap
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common Network Forensics Tasks</h3>
+                        <table>
+                            <tr>
+                                <th>Task</th>
+                                <th>Tool/Command</th>
+                                <th>Purpose</th>
+                            </tr>
+                            <tr>
+                                <td>Follow TCP Stream</td>
+                                <td>Wireshark: Right-click → Follow → TCP Stream</td>
+                                <td>Reconstruct conversations</td>
+                            </tr>
+                            <tr>
+                                <td>Extract Files</td>
+                                <td>binwalk, foremost, tcpxtract</td>
+                                <td>Recover transferred files</td>
+                            </tr>
+                            <tr>
+                                <td>Analyze DNS</td>
+                                <td>tshark -Y "dns"</td>
+                                <td>Examine DNS queries</td>
+                            </tr>
+                            <tr>
+                                <td>Find Credentials</td>
+                                <td>strings capture.pcap | grep -i "pass"</td>
+                                <td>Search for passwords</td>
+                            </tr>
+                            <tr>
+                                <td>Export Objects</td>
+                                <td>Wireshark: File → Export Objects</td>
+                                <td>Extract HTTP, SMB files</td>
+                            </tr>
+                            <tr>
+                                <td>GeoIP Lookup</td>
+                                <td>tshark -r capture.pcap -Y "ip" -T fields -e ip.src | geoiplookup</td>
+                                <td>Geolocate IP addresses</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced PCAP Analysis</h3>
+                        <div class="code-block">
+# Extract SSL/TLS keys for decryption
+tshark -r capture.pcap -o "ssl.keylog_file:sslkeys.log" -qz follow,ssl,ascii,1
+
+# Reassemble fragmented packets
+editcap -F pcap capture.pcap reassembled.pcap
+
+# Filter specific protocols
+tshark -r capture.pcap -Y "ftp || http || smb || dns"
+
+# Extract DNS queries
+tshark -r capture.pcap -Y "dns" -T fields -e dns.qry.name
+
+# Analyze VoIP calls
+tshark -r capture.pcap -q -z rtp,streams
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Network Analysis Tools</h3>
+                        <p><span class="tool-name">Wireshark</span> - GUI network analyzer</p>
+                        <div class="tool-details" id="wireshark-details">
+                            <div class="code-block">
+# Install
+sudo apt install wireshark
+
+# Useful features:
+- Follow TCP streams
+- Export objects (HTTP, SMB)
+- Statistics and protocol hierarchy
+- IO graphs for traffic analysis
+- Expert info for anomalies
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">ngrep</span> - Network grep</p>
+                        <div class="tool-details" id="ngrep-details">
+                            <div class="code-block">
+# Install
+sudo apt install ngrep
+
+# Basic usage
+ngrep -I capture.pcap "password"
+ngrep -I capture.pcap -q -W byline "GET|POST" port 80
+
+# Live capture
+ngrep -d eth0 "login" tcp port 80
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">NetworkMiner</span> - Passive network analyzer</p>
+                        <div class="tool-details" id="networkminer-details">
+                            <div class="code-block">
+# Download from: https://www.netresec.com/?page=NetworkMiner
+# Features:
+- File extraction
+- Credential harvesting
+- Session reconstruction
+- OS fingerprinting
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For network challenges:
+                        <ul>
+                            <li>Always check for hidden data in protocols (DNS tunneling, ICMP)</li>
+                            <li>Look for unusual ports or protocols</li>
+                            <li>Examine all file transfers (HTTP, FTP, SMB)</li>
+                            <li>Check for credentials in plaintext protocols (HTTP, FTP, Telnet)</li>
+                            <li>Search for protocol anomalies or malformed packets</li>
+                            <li>Don't ignore the packet timing - sometimes delays contain information</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="stego">
+            <div class="card">
+                <h2>Steganography</h2>
+                <div class="forensic-section">
+                    <p>Finding and extracting hidden data from images, audio, and other files.</p>
+
+                    <div class="sub-topic">
+                        <h3>Basic Steganography Techniques</h3>
+                        <table>
+                            <tr>
+                                <th>Technique</th>
+                                <th>Description</th>
+                                <th>Detection Methods</th>
+                            </tr>
+                            <tr>
+                                <td>LSB (Least Significant Bit)</td>
+                                <td>Hiding data in image pixel values</td>
+                                <td>Stegdetect, visual analysis</td>
+                            </tr>
+                            <tr>
+                                <td>File Append</td>
+                                <td>Appending data after EOF marker</td>
+                                <td>binwalk, file size analysis</td>
+                            </tr>
+                            <tr>
+                                <td>Metadata</td>
+                                <td>Hiding data in EXIF or other metadata</td>
+                                <td>exiftool, strings</td>
+                            </tr>
+                            <tr>
+                                <td>Echo Hiding</td>
+                                <td>Hiding data in audio echoes</td>
+                                <td>Spectral analysis</td>
+                            </tr>
+                            <tr>
+                                <td>Whitespace</td>
+                                <td>Using tabs/spaces in text files</td>
+                                <td>Hex editor, stegsnow</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Steganography Tools</h3>
+                        <div class="code-block">
+# Image steganography
+steghide extract -sf image.jpg      # Extract with steghide
+stegsolve image.png                # Visual analysis tool
+zsteg image.png                    # Detect hidden data in PNG/BMP
+
+# Audio steganography
+sonic-visualizer audio.wav         # Spectral analysis
+deepsound -h audio.wav             # Extract hidden data
+
+# General tools
+binwalk -e file.bin                # File carving
+foremost -i file.bin -o output     # File carving
+xxd file.bin | less                # Hex view
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced Steganography Detection</h3>
+                        <div class="code-block">
+# LSB analysis with stegsolve
+java -jar stegsolve.jar            # Run stegsolve
+# Then use "Analyse > LSB" options
+
+# Statistical analysis
+stegdetect -t jpeg image.jpg       # Detect stego in JPEGs
+
+# Password cracking for steghide
+stegcracker image.jpg wordlist.txt # Brute force steghide pass
+
+# Frequency analysis for audio
+sox audio.wav -n spectrogram       # Create spectrogram
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Steganography Tools</h3>
+                        <p><span class="tool-name">StegSolve</span> - Image stego analysis</p>
+                        <div class="tool-details" id="stegsolve-details">
+                            <div class="code-block">
+# Download from: https://github.com/zardus/ctf-tools/blob/master/stegsolve/install
+# Usage:
+java -jar stegsolve.jar
+# Features:
+- LSB analysis
+- Color plane analysis
+- Frame browser for GIFs
+- XOR/AND/OR operations
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">zsteg</span> - PNG/BMP stego tool</p>
+                        <div class="tool-details" id="zsteg-details">
+                            <div class="code-block">
+# Install
+gem install zsteg
+
+# Usage
+zsteg image.png              # Basic detection
+zsteg -a image.png           # All tests
+zsteg -E "b1,bgr,lsb,xy" image.png # Extract data
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">stegano</span> - Python stego toolkit</p>
+                        <div class="tool-details" id="stegano-details">
+                            <div class="code-block">
+# Install
+pip install stegano
+
+# Usage
+stegano-lsb hide -i input.png -o output.png -f secret.txt
+stegano-lsb reveal -i output.png -o secret.txt
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For steganography challenges:
+                        <ul>
+                            <li>Try all stego tools - different tools find different things</li>
+                            <li>Check multiple color planes (RGB, alpha channel)</li>
+                            <li>Look for anomalies in file size or structure</li>
+                            <li>Try common passwords if extraction requires one</li>
+                            <li>Don't forget to check metadata and appended data</li>
+                            <li>For audio, listen carefully and examine spectrograms</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="disk">
+            <div class="card">
+                <h2>Disk Forensics</h2>
+                <div class="forensic-section">
+                    <p>Analyzing disk images to recover files, partitions, and system artifacts.</p>
+
+                    <div class="sub-topic">
+                        <h3>Disk Analysis Basics</h3>
+                        <div class="code-block">
+# Identify disk image type
+file disk.img
+
+# Mount disk image
+sudo losetup -f -P disk.img
+sudo mount /dev/loop0p1 /mnt
+
+# List partitions
+fdisk -l disk.img
+mmls disk.img
+
+# File system analysis
+fsstat disk.img
+fls -r disk.img # List files recursively
+
+# Recover deleted files
+icat disk.img inode > recovered_file
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common Disk Artifacts</h3>
+                        <table>
+                            <tr>
+                                <th>Artifact</th>
+                                <th>Tool/Command</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>Partition Table</td>
+                                <td>fdisk, mmls</td>
+                                <td>Disk partition information</td>
+                            </tr>
+                            <tr>
+                                <td>Master File Table</td>
+                                <td>fls, mactime</td>
+                                <td>NTFS file system metadata</td>
+                            </tr>
+                            <tr>
+                                <td>Deleted Files</td>
+                                <td>icat, photorec</td>
+                                <td>Recover deleted content</td>
+                            </tr>
+                            <tr>
+                                <td>File Slack</td>
+                                <td>blkls</td>
+                                <td>Space between file end and cluster end</td>
+                            </tr>
+                            <tr>
+                                <td>Journal</td>
+                                <td>jls, jcat</td>
+                                <td>File system journal entries</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced Disk Forensics</h3>
+                        <div class="code-block">
+# Timeline analysis
+fls -r -m / disk.img > body.txt
+mactime -b body.txt -d -z UTC > timeline.csv
+
+# Registry analysis (Windows)
+python3 vol.py -f memory.dmp windows.registry.printkey --key "SAM\Domains\Account\Users"
+python3 vol.py -f memory.dmp windows.registry.hivelist
+
+# Browser artifact analysis
+python3 vol.py -f memory.dmp windows.chromehistory
+python3 vol.py -f memory.dmp windows.firefoxhistory
+
+# File carving
+foremost -i disk.img -o output
+scalpel -c /etc/scalpel.conf -o output disk.img
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Disk Analysis Tools</h3>
+                        <p><span class="tool-name">The Sleuth Kit</span> - CLI disk analysis</p>
+                        <div class="tool-details" id="sleuthkit-details">
+                            <div class="code-block">
+# Install
+sudo apt install sleuthkit
+
+# Commands:
+mmls disk.img            # Partition table
+fls -r disk.img          # List files
+icat disk.img inode      # Extract file
+istat disk.img inode     # File metadata
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">Autopsy</span> - GUI disk analysis</p>
+                        <div class="tool-details" id="autopsy-details">
+                            <div class="code-block">
+# Install
+sudo apt install autopsy
+
+# Features:
+- File system browser
+- Keyword search
+- Registry analysis
+- Timeline generation
+- Case management
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">photorec</span> - File recovery</p>
+                        <div class="tool-details" id="photorec-details">
+                            <div class="code-block">
+# Install
+sudo apt install testdisk
+
+# Usage
+photorec /dev/sdX
+# Select partition, file types, output directory
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For disk challenges:
+                        <ul>
+                            <li>Always check for multiple partitions</li>
+                            <li>Look for hidden or deleted files</li>
+                            <li>Examine file slack and unallocated space</li>
+                            <li>Check for alternate data streams (Windows)</li>
+                            <li>Don't ignore system files and logs</li>
+                            <li>Create a timeline of file activity</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="mobile">
+            <div class="card">
+                <h2>Mobile Forensics</h2>
+                <div class="forensic-section">
+                    <p>Extracting and analyzing data from mobile devices and apps.</p>
+
+                    <div class="sub-topic">
+                        <h3>Mobile Forensics Basics</h3>
+                        <div class="code-block">
+# Android backup extraction
+abe unpack backup.ab backup.tar
+
+# APK analysis
+apktool d app.apk -o output
+dex2jar app.apk -o app.jar
+jd-gui app.jar
+
+# SQLite database analysis
+sqlite3 database.db .tables
+sqlite3 database.db "SELECT * FROM users;"
+
+# iOS backup analysis
+python ios_backup_reader.py -b backup -o output
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common Mobile Artifacts</h3>
+                        <table>
+                            <tr>
+                                <th>Artifact</th>
+                                <th>Location</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>SMS/MMS</td>
+                                <td>/data/data/com.android.providers.telephony</td>
+                                <td>Text messages</td>
+                            </tr>
+                            <tr>
+                                <td>Call Logs</td>
+                                <td>/data/data/com.android.providers.contacts</td>
+                                <td>Call history</td>
+                            </tr>
+                            <tr>
+                                <td>Browser History</td>
+                                <td>/data/data/com.android.browser</td>
+                                <td>Web browsing data</td>
+                            </tr>
+                            <tr>
+                                <td>GPS Data</td>
+                                <td>/data/data/com.google.android.apps.maps</td>
+                                <td>Location information</td>
+                            </tr>
+                            <tr>
+                                <td>App Data</td>
+                                <td>/data/data/[package_name]</td>
+                                <td>Application-specific data</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced Mobile Forensics</h3>
+                        <div class="code-block">
+# Android data extraction via ADB
+adb shell
+su
+tar -cvf /sdcard/data.tar /data/data/
+
+# iOS keychain analysis
+python ios_keychain_reader.py -b backup -o output
+
+# Android memory analysis
+./avmlinux memory.dmp
+vol.py -f memory.dmp --profile=Android linux_pslist
+
+# SQLite deleted data recovery
+sqlite3 database.db ".recover" > recovered.sql
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Mobile Forensics Tools</h3>
+                        <p><span class="tool-name">Andriller</span> - Android forensic toolkit</p>
+                        <div class="tool-details" id="andriller-details">
+                            <div class="code-block">
+# Download from: https://github.com/den4uk/andriller
+# Features:
+- ADB data extraction
+- App analysis
+- SQLite viewer
+- Data carving
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">DB Browser for SQLite</span> - GUI SQLite viewer</p>
+                        <div class="tool-details" id="sqlitebrowser-details">
+                            <div class="code-block">
+# Install
+sudo apt install sqlitebrowser
+
+# Features:
+- Browse and edit SQLite databases
+- Execute custom queries
+- Export data to CSV
+- Recover deleted records
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">apktool</span> - APK decompiler</p>
+                        <div class="tool-details" id="apktool-details">
+                            <div class="code-block">
+# Install
+sudo apt install apktool
+
+# Usage
+apktool d app.apk -o output
+apktool b output -o modified.apk
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For mobile challenges:
+                        <ul>
+                            <li>Always check SQLite databases for interesting data</li>
+                            <li>Look for backup files (.ab, .tar, .xml)</li>
+                            <li>Examine shared preferences and cache directories</li>
+                            <li>Decompile APKs to look for hardcoded secrets</li>
+                            <li>Check for base64 encoded strings in app data</li>
+                            <li>Don't ignore app logs and crash reports</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>Forensics Tools</h2>
+                <div class="forensic-section">
+                    <p>Essential tools for solving forensics challenges in CTFs.</p>
+
+                    <div class="sub-topic">
+                        <h3>General Purpose Tools</h3>
+                        <table>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Purpose</th>
+                                <th>Install Command</th>
+                                <th>Key Features</th>
+                            </tr>
+                            <tr>
+                                <td>binwalk</td>
+                                <td>File carving and analysis</td>
+                                <td>sudo apt install binwalk</td>
+                                <td>Signature analysis, recursive extraction</td>
+                            </tr>
+                            <tr>
+                                <td>foremost</td>
+                                <td>File carving</td>
+                                <td>sudo apt install foremost</td>
+                                <td>Header/footer based carving</td>
+                            </tr>
+                            <tr>
+                                <td>xxd</td>
+                                <td>Hex dump viewer</td>
+                                <td>sudo apt install xxd</td>
+                                <td>Hex/ASCII view, pattern search</td>
+                            </tr>
+                            <tr>
+                                <td>strings</td>
+                                <td>Extract printable strings</td>
+                                <td>Built-in</td>
+                                <td>Basic string extraction</td>
+                            </tr>
+                            <tr>
+                                <td>file</td>
+                                <td>File type identification</td>
+                                <td>Built-in</td>
+                                <td>Magic number detection</td>
+                            </tr>
+                            <tr>
+                                <td>exiftool</td>
+                                <td>Metadata extraction</td>
+                                <td>sudo apt install libimage-exiftool-perl</td>
+                                <td>Comprehensive metadata support</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Specialized Tools</h3>
+                        <table>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Category</th>
+                                <th>Installation</th>
+                                <th>Key Features</th>
+                            </tr>
+                            <tr>
+                                <td>Volatility</td>
+                                <td>Memory</td>
+                                <td>pip install volatility3</td>
+                                <td>Memory analysis, plugins</td>
+                            </tr>
+                            <tr>
+                                <td>Wireshark</td>
+                                <td>Network</td>
+                                <td>sudo apt install wireshark</td>
+                                <td>PCAP analysis, protocol dissection</td>
+                            </tr>
+                            <tr>
+                                <td>steghide</td>
+                                <td>Steganography</td>
+                                <td>sudo apt install steghide</td>
+                                <td>LSB steganography</td>
+                            </tr>
+                            <tr>
+                                <td>Autopsy</td>
+                                <td>Disk</td>
+                                <td>sudo apt install autopsy</td>
+                                <td>GUI disk analysis, timeline</td>
+                            </tr>
+                            <tr>
+                                <td>Andriller</td>
+                                <td>Mobile</td>
+                                <td>Download from GitHub</td>
+                                <td>Android forensic analysis</td>
+                            </tr>
+                            <tr>
+                                <td>SQLite Browser</td>
+                                <td>Database</td>
+                                <td>sudo apt install sqlitebrowser</td>
+                                <td>SQLite database viewer</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Online Resources</h3>
+                        <table>
+                            <tr>
+                                <th>Resource</th>
+                                <th>URL</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>CyberChef</td>
+                                <td>https://gchq.github.io/CyberChef/</td>
+                                <td>Web-based encoding/decoding toolkit</td>
+                            </tr>
+                            <tr>
+                                <td>Hexed.it</td>
+                                <td>https://hexed.it/</td>
+                                <td>Online hex editor</td>
+                            </tr>
+                            <tr>
+                                <td>File Signature Database</td>
+                                <td>https://www.filesignatures.net/</td>
+                                <td>Magic number reference</td>
+                            </tr>
+                            <tr>
+                                <td>PacketTotal</td>
+                                <td>https://packettotal.com/</td>
+                                <td>Online PCAP analyzer</td>
+                            </tr>
+                            <tr>
+                                <td>DCode</td>
+                                <td>https://www.dcode.fr/</td>
+                                <td>Cipher identifier & tools</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> When using forensic tools:
+                        <ul>
+                            <li>Always try the simplest tool first</li>
+                            <li>Check tool documentation for advanced options</li>
+                            <li>Combine tools for multi-step challenges</li>
+                            <li>Save your work frequently</li>
+                            <li>When stuck, try alternative tools that perform similar functions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>CTF Forensics Tips</h2>
+                <div class="forensic-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ul>
+                            <li>Start with basic analysis (file, strings, binwalk)</li>
+                            <li>Look for hidden files or data</li>
+                            <li>Check metadata (exiftool, pdfinfo)</li>
+                            <li>Try multiple tools - they often find different things</li>
+                            <li>When stuck, think about what you haven't checked yet</li>
+                            <li>Document your process - helps when you get stuck</li>
+                            <li>Take breaks - fresh eyes often spot what you missed</li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common Flag Locations</h3>
+                        <div class="code-block">
+# Typical flag formats:
+flag{Th1s_1s_4_fl4g}
+FLAG{Th1s_1s_4_fl4g}
+CTF{Th1s_1s_4_fl4g}
+THM{Th1s_1s_4_fl4g}
+HTB{Th1s_1s_4_fl4g}
+
+# Common hiding places:
+- File metadata (EXIF, PDF properties)
+- Hidden files in disk images
+- Unusual network traffic
+- Memory artifacts (process memory, network connections)
+- Steganography in images/audio
+- Deleted files or slack space
+- Alternate data streams (Windows)
+- Database records (SQLite, registry)
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Quick Checks</h3>
+                        <ul>
+                            <li>Run <span class="flag-format">strings</span> on every file</li>
+                            <li>Check for embedded files with <span class="flag-format">binwalk</span></li>
+                            <li>Look at hex headers/footers with <span class="flag-format">xxd</span></li>
+                            <li>Search for flag formats with <span class="flag-format">grep -a "flag{" file</span></li>
+                            <li>Try common stego tools on image/audio files</li>
+                            <li>Check for password-protected archives (try empty password)</li>
+                            <li>Examine all metadata with <span class="flag-format">exiftool</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Challenge-Specific Tips</h3>
+                        <table>
+                            <tr>
+                                <th>Challenge Type</th>
+                                <th>First Steps</th>
+                            </tr>
+                            <tr>
+                                <td>Memory Dump</td>
+                                <td>imageinfo, pslist, netscan, filescan</td>
+                            </tr>
+                            <tr>
+                                <td>PCAP File</td>
+                                <td>Protocol hierarchy, follow streams, export objects</td>
+                            </tr>
+                            <tr>
+                                <td>Disk Image</td>
+                                <td>mmls, fls, icat, timeline analysis</td>
+                            </tr>
+                            <tr>
+                                <td>Image File</td>
+                                <td>Steg tools, LSB analysis, metadata</td>
+                            </tr>
+                            <tr>
+                                <td>Binary File</td>
+                                <td>Strings, hex view, file carving</td>
+                            </tr>
+                            <tr>
+                                <td>Mobile Artifact</td>
+                                <td>SQLite analysis, APK decompilation</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="note">
+                        <strong>Remember:</strong> Forensic challenges often combine multiple techniques. The solution might require several layers of analysis and extraction.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Digital Forensics Guide</p>
+            <p>Remember: Always practice ethical hacking with proper authorization.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.forensic-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Show tool details
+        document.querySelectorAll('.tool-name').forEach(tool => {
+            tool.addEventListener('click', () => {
+                const details = tool.parentNode.nextElementSibling;
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.forensic-section').style.display = 'block';
+    </script>
+</body>
+</html>

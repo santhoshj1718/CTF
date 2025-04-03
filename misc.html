@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miscellaneous | CTF Learning Hub</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f8f8;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        header {
+            border-bottom: 3px solid #f44336;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #f44336;
+            text-transform: uppercase;
+        }
+        h2 {
+            color: #f44336;
+            border-left: 4px solid #f44336;
+            padding-left: 10px;
+            margin-top: 40px;
+            cursor: pointer;
+        }
+        h2::before {
+            content: "+ ";
+            color: #f44336;
+        }
+        h2.active::before {
+            content: "- ";
+        }
+        h3 {
+            color: #2196f3;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .vuln-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+            border-left: 3px solid #f44336;
+            white-space: pre-wrap;
+            word-break: break-all;
+            tab-size: 4;
+        }
+        .note {
+            background-color: #33322d;
+            border-left: 4px solid #ffd700;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #3a1d1d;
+            border-left: 4px solid #ff9800;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tool {
+            background-color: #1e2b3a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        a {
+            color: #f44336;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #f44336;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        .sub-topic {
+            margin-left: 20px;
+            border-left: 2px solid #444;
+            padding-left: 15px;
+        }
+        .ctf-tip {
+            background-color: #2d1e3a;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .flag-format {
+            font-family: 'Courier New', Courier, monospace;
+            color: #f44336;
+            background-color: #2d2d2d;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Miscellaneous</h1>
+            <p>Everything that doesn't fit other categories</p>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="#" class="nav-link" data-section="programming">Programming</a>
+                <a href="#" class="nav-link" data-section="math">Math Puzzles</a>
+                <a href="#" class="nav-link" data-section="logic">Logic Puzzles</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="programming">
+            <div class="card">
+                <h2>Programming Challenges</h2>
+                <div class="vuln-section">
+                    <p>Solving problems with custom scripts and algorithms:</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Challenge Types</h3>
+                        <ul>
+                            <li>Algorithmic problems (sorting, searching)</li>
+                            <li>Data parsing and extraction</li>
+                            <li>Automation tasks</li>
+                            <li>Reverse engineering custom protocols</li>
+                            <li>Optimization challenges</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Useful Libraries</h3>
+                        <div class="code-block">
+# Python
+from pwn import *      # pwntools for CTF challenges
+import z3              # SMT solver for constraints
+import numpy as np     # Numerical computing
+import pandas as pd    # Data analysis
+import requests        # Web interactions
+import socket          # Network programming
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="math">
+            <div class="card">
+                <h2>Math Puzzles</h2>
+                <div class="vuln-section">
+                    <p>Solving mathematical problems and proofs:</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Topics</h3>
+                        <ul>
+                            <li>Modular arithmetic</li>
+                            <li>Prime number factorization</li>
+                            <li>Matrix operations</li>
+                            <li>Combinatorics</li>
+                            <li>Graph theory</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Tools</h3>
+                        <div class="code-block">
+# SageMath
+sage: factor(123456789)
+sage: Matrix([[1,2],[3,4]]).inverse()
+
+# Wolfram Alpha
+https://www.wolframalpha.com/
+
+# Python libraries:
+from sympy import *    # Symbolic mathematics
+from gmpy2 import *    # Multiple precision arithmetic
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="logic">
+            <div class="card">
+                <h2>Logic Puzzles</h2>
+                <div class="vuln-section">
+                    <p>Non-traditional logic-based challenges:</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Types</h3>
+                        <ul>
+                            <li>Grid-based puzzles (nonograms, sudoku)</li>
+                            <li>Text-based adventures</li>
+                            <li>Riddles and word puzzles</li>
+                            <li>Visual puzzles</li>
+                            <li>Lateral thinking challenges</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Approach</h3>
+                        <div class="code-block">
+1. Identify all given information
+2. Look for patterns and constraints
+3. Eliminate impossible options
+4. Make logical deductions
+5. Verify intermediate solutions
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>Miscellaneous Tools</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>Installation</h3>
+                        <div class="code-block">
+# Kali Linux
+sudo apt update && sudo apt install python3-pip sage mathomatic z3
+
+# Python packages
+pip install pwntools z3-solver numpy pandas sympy gmpy2
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Tool Comparison</h3>
+                        <table>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Purpose</th>
+                                <th>Example</th>
+                            </tr>
+                            <tr>
+                                <td>pwntools</td>
+                                <td>CTF challenge framework</td>
+                                <td>from pwn import *</td>
+                            </tr>
+                            <tr>
+                                <td>z3</td>
+                                <td>Theorem prover</td>
+                                <td>solve(x + y == 10, x > 5)</td>
+                            </tr>
+                            <tr>
+                                <td>SageMath</td>
+                                <td>Advanced mathematics</td>
+                                <td>factor(2^128-1)</td>
+                            </tr>
+                            <tr>
+                                <td>Wolfram Alpha</td>
+                                <td>Computational knowledge</td>
+                                <td>prime factors of 123456</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>Miscellaneous CTF Tips</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ol>
+                            <li>Read the challenge description carefully</li>
+                            <li>Identify what's given and what's needed</li>
+                            <li>Break the problem into smaller parts</li>
+                            <li>Look for patterns or repetitions</li>
+                            <li>Automate repetitive tasks</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Quick Wins</h3>
+                        <ul>
+                            <li>Check for simple encoding (base64, hex)</li>
+                            <li>Try common mathematical operations</li>
+                            <li>Look for hidden patterns in data</li>
+                            <li>Use constraints solvers for logic puzzles</li>
+                            <li>Google similar problems</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>Pro Tip:</strong> When stuck:
+                        <ul>
+                            <li>Take a break and come back with fresh eyes</li>
+                            <li>Explain the problem to someone else</li>
+                            <li>Try solving a simpler version first</li>
+                            <li>Look for writeups of similar challenges</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Miscellaneous Guide</p>
+            <p>Remember: Creativity is often the key to solving these challenges.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.vuln-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.vuln-section').style.display = 'block';
+    </script>
+</body>
+</html>

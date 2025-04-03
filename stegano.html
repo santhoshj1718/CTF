@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steganography | CTF Learning Hub</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f8f8;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        header {
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff9800;
+            text-transform: uppercase;
+        }
+        h2 {
+            color: #ff9800;
+            border-left: 4px solid #ff9800;
+            padding-left: 10px;
+            margin-top: 40px;
+            cursor: pointer;
+        }
+        h2::before {
+            content: "+ ";
+            color: #ff9800;
+        }
+        h2.active::before {
+            content: "- ";
+        }
+        h3 {
+            color: #2196f3;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .vuln-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+            border-left: 3px solid #ff9800;
+            white-space: pre-wrap;
+            word-break: break-all;
+            tab-size: 4;
+        }
+        .note {
+            background-color: #33322d;
+            border-left: 4px solid #ffd700;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #3a1d1d;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tool {
+            background-color: #1e2b3a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ff9800;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        .sub-topic {
+            margin-left: 20px;
+            border-left: 2px solid #444;
+            padding-left: 15px;
+        }
+        .ctf-tip {
+            background-color: #2d1e3a;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .flag-format {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff9800;
+            background-color: #2d2d2d;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Steganography</h1>
+            <p>Master the art of hiding data in plain sight</p>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="#" class="nav-link" data-section="image-stego">Image Stego</a>
+                <a href="#" class="nav-link" data-section="audio-stego">Audio Stego</a>
+                <a href="#" class="nav-link" data-section="file-carving">File Carving</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="image-stego">
+            <div class="card">
+                <h2>Image Steganography</h2>
+                <div class="vuln-section">
+                    <p>Hiding data in images using various techniques:</p>
+                    
+                    <div class="sub-topic">
+                        <h3>LSB (Least Significant Bit)</h3>
+                        <div class="code-block">
+# Extract LSB data using stegsolve.jar
+java -jar stegsolve.jar
+# Use "Analyse > LSB" options
+
+# Python LSB extraction:
+from PIL import Image
+img = Image.open("stego.png")
+pixels = img.load()
+binary_data = ""
+for y in range(img.height):
+    for x in range(img.width):
+        r, g, b = pixels[x, y]
+        binary_data += str(r & 1) + str(g & 1) + str(b & 1)
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Metadata</h3>
+                        <div class="code-block">
+# ExifTool for metadata
+exiftool stego.jpg
+
+# Strings command
+strings stego.jpg | grep -i flag
+
+# Common metadata fields to check:
+- Comment
+- Artist
+- Software
+- UserComment
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>File Structure</h3>
+                        <div class="code-block">
+# Binwalk for file analysis
+binwalk stego.jpg
+
+# Check file signatures
+xxd stego.jpg | head -n 10
+
+# Common appended files:
+- ZIP archives
+- Text files
+- Other images
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="audio-stego">
+            <div class="card">
+                <h2>Audio Steganography</h2>
+                <div class="vuln-section">
+                    <p>Hiding data in audio files:</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Spectrogram Analysis</h3>
+                        <div class="code-block">
+# Sonic Visualizer
+# Add spectrogram layer and look for patterns
+
+# Audacity
+# Import audio > Select track > Spectrogram view
+
+# Common findings:
+- Morse code in spectrogram
+- Hidden images
+- Binary patterns
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>LSB Audio Stego</h3>
+                        <div class="code-block">
+# Using Steghide
+steghide extract -sf audio.wav
+
+# Python implementation:
+import wave
+song = wave.open("song.wav", mode='rb')
+frame_bytes = bytearray(list(song.readframes(song.getnframes())))
+extracted = [frame_bytes[i] & 1 for i in range(len(frame_bytes))]
+string = "".join(chr(int("".join(map(str,extracted[i:i+8])),2)) for i in range(0,len(extracted),8))
+print(string.split("###")[0])
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="file-carving">
+            <div class="card">
+                <h2>File Carving</h2>
+                <div class="vuln-section">
+                    <p>Extracting hidden files from other files:</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Basic Carving</h3>
+                        <div class="code-block">
+# Binwalk extraction
+binwalk -e stego.jpg
+
+# Foremost
+foremost -i stego.jpg -o output
+
+# DD command
+dd if=stego.jpg bs=1 skip=12345 of=extracted.zip
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Advanced Techniques</h3>
+                        <div class="code-block">
+# File signature searching
+hexdump -C stego.jpg | grep "PK"  # ZIP files
+hexdump -C stego.jpg | grep "JFIF" # JPEG
+
+# Manual carving with hex editor:
+1. Identify file headers
+2. Locate corresponding footers
+3. Extract bytes between them
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>Steganography Tools</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>Installation</h3>
+                        <div class="code-block">
+# Kali Linux
+sudo apt update && sudo apt install steghide stegosuite stegsolve binwalk foremost
+
+# BlackArch
+sudo pacman -S stegbreak stegdetect stegpy
+
+# Manual tools:
+- StegSolve (Java): https://github.com/zardus/ctf-tools/blob/master/stegsolve/install
+- zsteg (Ruby): gem install zsteg
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Tool Comparison</h3>
+                        <table>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Purpose</th>
+                                <th>Command</th>
+                            </tr>
+                            <tr>
+                                <td>steghide</td>
+                                <td>LSB steganography</td>
+                                <td>steghide extract -sf file.jpg</td>
+                            </tr>
+                            <tr>
+                                <td>stegsolve</td>
+                                <td>Image analysis</td>
+                                <td>java -jar stegsolve.jar</td>
+                            </tr>
+                            <tr>
+                                <td>zsteg</td>
+                                <td>PNG/BMP analysis</td>
+                                <td>zsteg -a image.png</td>
+                            </tr>
+                            <tr>
+                                <td>binwalk</td>
+                                <td>File carving</td>
+                                <td>binwalk -e file.jpg</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>Steganography CTF Tips</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ol>
+                            <li>Check file metadata (exiftool, strings)</li>
+                            <li>Look for appended files (binwalk, foremost)</li>
+                            <li>Analyze LSB patterns (stegsolve, zsteg)</li>
+                            <li>Check spectrograms for audio files</li>
+                            <li>Try password cracking if needed (stegcracker)</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Quick Commands</h3>
+                        <div class="code-block">
+# Basic analysis workflow:
+file stego.jpg                # Identify file type
+exiftool stego.jpg            # Check metadata
+strings stego.jpg             # Extract strings
+binwalk stego.jpg             # Check for embedded files
+stegsolve stego.jpg           # Visual analysis
+steghide extract -sf stego.jpg # Extract hidden data
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>Pro Tip:</strong> When stuck:
+                        <ul>
+                            <li>Try different tools on the same file</li>
+                            <li>Check file signatures with hex editor</li>
+                            <li>Look for patterns in binary data</li>
+                            <li>Try common stego passwords (empty, password, secret)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Steganography Guide</p>
+            <p>Remember: Always check multiple layers of a file for hidden data.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.vuln-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.vuln-section').style.display = 'block';
+    </script>
+</body>
+</html>
