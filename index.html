@@ -199,6 +199,45 @@
             font-size: 0.9em;
             display: none;
         }
+        
+        /* Notification styles */
+        .unread-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+        
+        #secretSymbol {
+            position: relative;
+        }
+        
+        .message-notification {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #ff9800;
+            color: #121212;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 1001;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -255,12 +294,17 @@
         </div>
     </div>
     
+    <!-- New Message Notification -->
+    <div class="message-notification" id="newMessageAlert"></div>
+    
     <script>
         // Configuration
-        const SECRET_KEY = "access"; // Change this to your secret key
+        const SECRET_KEY = "ctf123"; // Change this to your secret key
         let messages = [];
         let userName = localStorage.getItem('ctfChatUserName') || '';
         let chatOpen = false;
+        let unreadCount = 0;
+        let lastMessageTime = localStorage.getItem('ctfChatLastMessageTime') || 0;
         
         // DOM elements
         const secretSymbol = document.getElementById('secretSymbol');
@@ -280,10 +324,22 @@
         const nameInput = document.getElementById('nameInput');
         const saveName = document.getElementById('saveName');
         
+        const newMessageAlert = document.getElementById('newMessageAlert');
+        
+        // Create unread indicator
+        const unreadIndicator = document.createElement('div');
+        unreadIndicator.className = 'unread-indicator';
+        secretSymbol.appendChild(unreadIndicator);
+        
         // Initialize
-        loadMessages();
-        cleanupMessages();
-        setInterval(cleanupMessages, 60000); // Clean up every minute
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMessages();
+            cleanupMessages();
+            setInterval(cleanupMessages, 60000); // Clean up every minute
+            
+            // Check for unread messages
+            checkUnreadMessages();
+        });
         
         // Symbol click handler
         secretSymbol.addEventListener('click', () => {
@@ -333,6 +389,10 @@
             chatOpen = true;
             loadMessages();
             messageInput.focus();
+            
+            // Reset unread counter when opening chat
+            unreadCount = 0;
+            updateUnreadIndicator();
         }
         
         function closeChatRoom() {
@@ -376,6 +436,15 @@
             });
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Update last message time
+            if (messages.length > 0) {
+                const newestTime = Math.max(...messages.map(m => m.timestamp));
+                if (newestTime > lastMessageTime) {
+                    lastMessageTime = newestTime;
+                    localStorage.setItem('ctfChatLastMessageTime', lastMessageTime);
+                }
+            }
         }
         
         function cleanupMessages() {
@@ -394,14 +463,65 @@
                     timestamp: Date.now()
                 };
                 
+                // Update locally
                 messages.push(newMessage);
                 saveMessages();
                 filterAndDisplayMessages();
                 messageInput.value = '';
                 
-                // Notify other tabs
+                // Broadcast to other tabs
                 localStorage.setItem('ctfChatNewMessage', JSON.stringify(newMessage));
                 localStorage.removeItem('ctfChatNewMessage');
+                
+                // Also update the full message list for new tabs
+                localStorage.setItem('ctfChatMessages', JSON.stringify(messages));
+            }
+        }
+        
+        function handleNewMessage(message) {
+            // Check if this is a new message we haven't seen
+            if (message.timestamp > lastMessageTime) {
+                messages.push(message);
+                saveMessages();
+                
+                // Update last message time
+                lastMessageTime = message.timestamp;
+                localStorage.setItem('ctfChatLastMessageTime', lastMessageTime);
+                
+                // If chat is open, display immediately
+                if (chatOpen) {
+                    filterAndDisplayMessages();
+                } 
+                // Otherwise show notification
+                else {
+                    unreadCount++;
+                    updateUnreadIndicator();
+                    showNewMessageAlert(message);
+                }
+            }
+        }
+        
+        function showNewMessageAlert(message) {
+            newMessageAlert.textContent = `New message from ${message.sender}`;
+            newMessageAlert.style.display = 'block';
+            
+            setTimeout(() => {
+                newMessageAlert.style.display = 'none';
+            }, 3000);
+        }
+        
+        function updateUnreadIndicator() {
+            unreadIndicator.textContent = unreadCount;
+            unreadIndicator.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+        
+        function checkUnreadMessages() {
+            if (messages.length > 0 && !chatOpen) {
+                const newest = Math.max(...messages.map(m => m.timestamp));
+                if (newest > lastMessageTime) {
+                    unreadCount = messages.filter(m => m.timestamp > lastMessageTime).length;
+                    updateUnreadIndicator();
+                }
             }
         }
         
@@ -417,8 +537,12 @@
         window.addEventListener('storage', (e) => {
             if (e.key === 'ctfChatNewMessage' && e.newValue) {
                 const newMessage = JSON.parse(e.newValue);
-                messages.push(newMessage);
-                saveMessages();
+                handleNewMessage(newMessage);
+            }
+            
+            // Sync all messages when another tab updates them
+            if (e.key === 'ctfChatMessages' && e.newValue) {
+                messages = JSON.parse(e.newValue);
                 if (chatOpen) filterAndDisplayMessages();
             }
         });
