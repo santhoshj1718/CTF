@@ -12,6 +12,8 @@
             text-align: center;
             margin: 0;
             padding: 0;
+            position: relative;
+            min-height: 100vh;
         }
         .terminal {
             width: 80%;
@@ -49,7 +51,23 @@
             background-color: rgba(255, 152, 0, 0.2);
         }
         
-        /* Completely hidden chat room styles */
+        /* Hidden symbol */
+        #secretSymbol {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: #444;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+        
+        #secretSymbol:hover {
+            color: #666;
+        }
+        
+        /* Chat room styles */
         #chatRoom {
             display: none;
             position: fixed;
@@ -132,7 +150,8 @@
             cursor: pointer;
         }
         
-        #nameModal {
+        /* Modal styles */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -145,34 +164,41 @@
             align-items: center;
         }
         
-        #nameForm {
+        .modal-content {
             background-color: #1e1e1e;
             padding: 20px;
             border: 2px solid #ff9800;
             border-radius: 10px;
             width: 300px;
+            text-align: center;
         }
         
-        #nameInput {
+        .modal-input {
             width: 100%;
             padding: 8px;
-            margin-bottom: 10px;
+            margin: 10px 0;
             background-color: #121212;
             color: #f8f8f8;
             border: 1px solid #ff9800;
             border-radius: 4px;
         }
         
-        #saveName {
+        .modal-button {
             padding: 8px 15px;
             background-color: #ff9800;
             color: #121212;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin: 5px;
         }
         
-        /* Remove all visual hints about the chat */
+        .error-message {
+            color: #ff4444;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -193,7 +219,10 @@
         <p>Explore and master CTF techniques across multiple categories.</p>
     </div>
     
-    <!-- Completely hidden Chat Room Elements -->
+    <!-- Hidden symbol to access chat -->
+    <div id="secretSymbol" title="Hidden access">⚪</div>
+    
+    <!-- Hidden Chat Room -->
     <div id="chatRoom">
         <div id="chatHeader">
             <span>Secret CTF Chat</span>
@@ -206,39 +235,111 @@
         </div>
     </div>
     
-    <div id="nameModal">
-        <div id="nameForm">
+    <!-- Secret Key Modal -->
+    <div id="keyModal" class="modal">
+        <div class="modal-content">
+            <h3>Enter Secret Key</h3>
+            <input type="password" id="keyInput" class="modal-input" placeholder="Secret key">
+            <div id="keyError" class="error-message">Incorrect key. Please try again.</div>
+            <button id="submitKey" class="modal-button">Submit</button>
+            <button id="cancelKey" class="modal-button">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Name Modal -->
+    <div id="nameModal" class="modal">
+        <div class="modal-content">
             <h3>Enter Your Name</h3>
-            <input type="text" id="nameInput" placeholder="Your name">
-            <button id="saveName">Save</button>
+            <input type="text" id="nameInput" class="modal-input" placeholder="Your name">
+            <button id="saveName" class="modal-button">Save</button>
         </div>
     </div>
     
     <script>
-        // Chat room functionality
+        // Configuration
+        const SECRET_KEY = "access"; // Change this to your secret key
         let messages = [];
         let userName = localStorage.getItem('ctfChatUserName') || '';
         let chatOpen = false;
-        let lastActiveTime = Date.now();
-        const SECRET_CODE = 'ctfchat'; // Change this to your preferred secret code
-        let keySequence = '';
         
         // DOM elements
+        const secretSymbol = document.getElementById('secretSymbol');
         const chatRoom = document.getElementById('chatRoom');
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        const nameModal = document.getElementById('nameModal');
-        const nameInput = document.getElementById('nameInput');
-        const saveNameButton = document.getElementById('saveName');
         const closeChat = document.getElementById('closeChat');
         
-        // Check if user has a name
-        if (!userName) {
-            nameModal.style.display = 'flex';
+        const keyModal = document.getElementById('keyModal');
+        const keyInput = document.getElementById('keyInput');
+        const submitKey = document.getElementById('submitKey');
+        const cancelKey = document.getElementById('cancelKey');
+        const keyError = document.getElementById('keyError');
+        
+        const nameModal = document.getElementById('nameModal');
+        const nameInput = document.getElementById('nameInput');
+        const saveName = document.getElementById('saveName');
+        
+        // Initialize
+        loadMessages();
+        cleanupMessages();
+        setInterval(cleanupMessages, 60000); // Clean up every minute
+        
+        // Symbol click handler
+        secretSymbol.addEventListener('click', () => {
+            keyModal.style.display = 'flex';
+            keyInput.focus();
+        });
+        
+        // Secret key submission
+        submitKey.addEventListener('click', () => {
+            if (keyInput.value === SECRET_KEY) {
+                keyModal.style.display = 'none';
+                keyInput.value = '';
+                keyError.style.display = 'none';
+                
+                if (!userName) {
+                    nameModal.style.display = 'flex';
+                } else {
+                    openChatRoom();
+                }
+            } else {
+                keyError.style.display = 'block';
+                keyInput.value = '';
+            }
+        });
+        
+        // Cancel key entry
+        cancelKey.addEventListener('click', () => {
+            keyModal.style.display = 'none';
+            keyInput.value = '';
+            keyError.style.display = 'none';
+        });
+        
+        // Name submission
+        saveName.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (name) {
+                userName = name;
+                localStorage.setItem('ctfChatUserName', userName);
+                nameModal.style.display = 'none';
+                openChatRoom();
+            }
+        });
+        
+        // Chat room functions
+        function openChatRoom() {
+            chatRoom.style.display = 'flex';
+            chatOpen = true;
+            loadMessages();
+            messageInput.focus();
         }
         
-        // Load messages from localStorage
+        function closeChatRoom() {
+            chatRoom.style.display = 'none';
+            chatOpen = false;
+        }
+        
         function loadMessages() {
             const savedMessages = localStorage.getItem('ctfChatMessages');
             if (savedMessages) {
@@ -247,12 +348,10 @@
             }
         }
         
-        // Save messages to localStorage
         function saveMessages() {
             localStorage.setItem('ctfChatMessages', JSON.stringify(messages));
         }
         
-        // Filter messages to show only those from the last 2 hours
         function filterAndDisplayMessages() {
             const now = Date.now();
             const twoHoursAgo = now - (2 * 60 * 60 * 1000);
@@ -276,20 +375,16 @@
                 chatMessages.appendChild(messageElement);
             });
             
-            // Auto-scroll to bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         
-        // Clean up old messages (older than 1 hour)
         function cleanupMessages() {
             const now = Date.now();
             const oneHourAgo = now - (60 * 60 * 1000);
-            
             messages = messages.filter(msg => msg.timestamp > oneHourAgo);
             saveMessages();
         }
         
-        // Send a new message
         function sendMessage() {
             const text = messageInput.value.trim();
             if (text && userName) {
@@ -310,73 +405,32 @@
             }
         }
         
-        // Open the chat room
-        function openChatRoom() {
-            chatRoom.style.display = 'flex';
-            chatOpen = true;
-            lastActiveTime = Date.now();
-            loadMessages();
-            messageInput.focus();
-        }
-        
-        // Close the chat room
-        function closeChatRoom() {
-            chatRoom.style.display = 'none';
-            chatOpen = false;
-        }
-        
         // Event listeners
+        closeChat.addEventListener('click', closeChatRoom);
         sendButton.addEventListener('click', sendMessage);
         
         messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') sendMessage();
         });
         
-        saveNameButton.addEventListener('click', () => {
-            const name = nameInput.value.trim();
-            if (name) {
-                userName = name;
-                localStorage.setItem('ctfChatUserName', userName);
-                nameModal.style.display = 'none';
-            }
-        });
-        
-        closeChat.addEventListener('click', closeChatRoom);
-        
-        // Check for new messages from other tabs
+        // Handle cross-tab messaging
         window.addEventListener('storage', (e) => {
             if (e.key === 'ctfChatNewMessage' && e.newValue) {
                 const newMessage = JSON.parse(e.newValue);
                 messages.push(newMessage);
                 saveMessages();
-                
-                if (chatOpen) {
-                    filterAndDisplayMessages();
-                }
+                if (chatOpen) filterAndDisplayMessages();
             }
         });
         
-        // Secret code detection
-        document.addEventListener('keydown', (e) => {
-            // Only add printable characters to the sequence
-            if (e.key.length === 1) {
-                keySequence += e.key.toLowerCase();
-                if (keySequence.length > SECRET_CODE.length) {
-                    keySequence = keySequence.slice(-SECRET_CODE.length);
-                }
-                
-                if (keySequence === SECRET_CODE) {
-                    openChatRoom();
-                    keySequence = ''; // Reset after opening
-                }
-            }
+        // Handle Enter key in modals
+        keyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitKey.click();
         });
         
-        // Initialize
-        cleanupMessages();
-        setInterval(cleanupMessages, 60000); // Clean up every minute
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') saveName.click();
+        });
     </script>
 </body>
 </html>
