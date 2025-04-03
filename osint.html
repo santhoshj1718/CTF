@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT | CTF Learning Hub</title>
+    <style>
+        body{background-color:#121212;color:#f8f8f8;font-family:'Courier New',Courier,monospace;margin:0;padding:0;line-height:1.6}
+        .container{width:85%;margin:0 auto;padding:20px 0}
+        header{border-bottom:3px solid #ff9800;padding-bottom:20px;margin-bottom:30px;text-align:center}
+        h1{color:#ff9800;text-transform:uppercase}
+        h2{color:#4caf50;border-left:4px solid #4caf50;padding-left:10px;margin-top:40px;cursor:pointer}
+        h2::before{content:"+ ";color:#ff9800}
+        h2.active::before{content:"- "}
+        h3{color:#2196f3}
+        .card{background-color:#1e1e1e;border:1px solid #333;border-radius:5px;padding:15px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,0.3)}
+        .osint-section{display:none;animation:fadeIn 0.5s}
+        @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+        .code-block{background-color:#2d2d2d;padding:15px;border-radius:5px;overflow-x:auto;font-family:'Courier New',Courier,monospace;margin:15px 0;border-left:3px solid #ff9800;white-space:pre-wrap;word-break:break-all;tab-size:4}
+        .note{background-color:#33322d;border-left:4px solid #ffd700;padding:10px;margin:15px 0}
+        .warning{background-color:#3a1d1d;border-left:4px solid #f44336;padding:10px;margin:15px 0}
+        .tool{background-color:#1e2b3a;padding:10px;border-radius:5px;margin:10px 0}
+        a{color:#ff9800;text-decoration:none}
+        a:hover{text-decoration:underline}
+        nav{margin:20px 0}
+        nav a{margin-right:15px;padding:5px 10px;border:1px solid #ff9800;border-radius:3px}
+        table{width:100%;border-collapse:collapse;margin:20px 0}
+        th,td{border:1px solid #444;padding:8px;text-align:left}
+        th{background-color:#333}
+        tr:nth-child(even){background-color:#1e1e1e}
+        .sub-topic{margin-left:20px;border-left:2px solid #444;padding-left:15px}
+        .payload-list{columns:3;column-gap:20px}
+        .payload-item{break-inside:avoid;margin-bottom:10px}
+        .show-more{color:#ff9800;cursor:pointer;text-decoration:underline;margin:10px 0;display:inline-block}
+        .more-payloads{display:none}
+        .tool-name{color:#4caf50;cursor:pointer;text-decoration:underline}
+        .tool-details{display:none;margin-top:10px}
+        .vulnerable-code{background-color:#3a1d1d;padding:15px;border-radius:5px;margin:15px 0;border-left:3px solid #f44336}
+        .linux-option{color:#2196f3;cursor:pointer;text-decoration:underline;margin-right:15px}
+        .linux-install{display:none;margin-top:10px}
+        .examples{background-color:#1e2b3a;padding:15px;border-radius:5px;margin:15px 0;border-left:3px solid #2196f3}
+        .ctf-tip{background-color:#2d1e3a;border-left:4px solid #9c27b0;padding:10px;margin:15px 0}
+        .flag-format{font-family:'Courier New',Courier,monospace;color:#ff9800;background-color:#2d2d2d;padding:2px 5px;border-radius:3px}
+        .search-type{color:#ff9800;font-weight:bold}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OSINT Techniques</h1>
+            <p>Master Open Source Intelligence gathering for CTF challenges</p>
+            <nav>
+                <a href="ctf.html">Home</a>
+                <a href="#" class="nav-link" data-section="intro">Intro</a>
+                <a href="#" class="nav-link" data-section="username">Username Search</a>
+                <a href="#" class="nav-link" data-section="email">Email Search</a>
+                <a href="#" class="nav-link" data-section="domain">Domain Research</a>
+                <a href="#" class="nav-link" data-section="image">Image Analysis</a>
+                <a href="#" class="nav-link" data-section="geo">Geolocation</a>
+                <a href="#" class="nav-link" data-section="social">Social Media</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="intro">
+            <div class="card">
+                <h2>Introduction to OSINT</h2>
+                <div class="osint-section">
+                    <p>Open Source Intelligence (OSINT) involves collecting information from publicly available sources. In CTFs, OSINT challenges typically involve:</p>
+                    <ul>
+                        <li>Finding hidden information about people or organizations</li>
+                        <li>Tracking digital footprints across platforms</li>
+                        <li>Analyzing metadata from files and images</li>
+                        <li>Discovering relationships between entities</li>
+                        <li>Identifying locations from photos or clues</li>
+                    </ul>
+
+                    <div class="sub-topic">
+                        <h3>Common OSINT Challenge Types</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Example Techniques</th>
+                            </tr>
+                            <tr>
+                                <td>Username Tracking</td>
+                                <td>Find accounts across platforms</td>
+                                <td>Username search tools, profile analysis</td>
+                            </tr>
+                            <tr>
+                                <td>Email Investigation</td>
+                                <td>Find accounts and breaches</td>
+                                <td>Email search, breach databases</td>
+                            </tr>
+                            <tr>
+                                <td>Domain Research</td>
+                                <td>Discover website information</td>
+                                <td>WHOIS, DNS records, subdomains</td>
+                            </tr>
+                            <tr>
+                                <td>Image Analysis</td>
+                                <td>Extract metadata and locations</td>
+                                <td>EXIF data, reverse image search</td>
+                            </tr>
+                            <tr>
+                                <td>Geolocation</td>
+                                <td>Identify locations from clues</td>
+                                <td>Google Earth, street view, landmarks</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>OSINT Methodology</h3>
+                        <div class="code-block">
+1. Define the target (username, email, image, etc.)
+2. Identify potential sources of information
+3. Use appropriate tools for investigation
+4. Correlate information from multiple sources
+5. Verify findings for accuracy
+6. Document the process and sources
+                        </div>
+                    </div>
+
+                    <div class="note">
+                        <strong>Note:</strong> Always respect privacy laws and terms of service when conducting OSINT research.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="username">
+            <div class="card">
+                <h2>Username Search</h2>
+                <div class="osint-section">
+                    <p>Finding accounts across multiple platforms using a username.</p>
+
+                    <div class="sub-topic">
+                        <h3>Username Search Tools</h3>
+                        <div class="code-block">
+# Popular username search sites:
+https://whatsmyname.app/
+https://namechk.com/
+https://checkusernames.com/
+https://sherlock-project.github.io/ (CLI tool)
+
+# CLI tools
+python3 sherlock username
+python3 maigret.py username
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Manual Search Techniques</h3>
+                        <div class="code-block">
+# Google Dorking
+site:twitter.com "username"
+site:github.com "username"
+inurl:username
+
+# Social Media Direct Search
+https://twitter.com/username
+https://www.instagram.com/username/
+https://www.reddit.com/user/username
+https://github.com/username
+
+# Forum Searches
+site:reddit.com "username"
+site:stackoverflow.com "username"
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Profile Analysis</h3>
+                        <div class="code-block">
+1. Check profile pictures (reverse image search)
+2. Analyze bio/description information
+3. Look for connected accounts/links
+4. Examine post history for clues
+5. Note registration dates and activity patterns
+6. Check for common friends/connections
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Username Tools</h3>
+                        <p><span class="tool-name">Sherlock</span> - CLI username checker</p>
+                        <div class="tool-details" id="sherlock-details">
+                            <div class="code-block">
+# Install
+git clone https://github.com/sherlock-project/sherlock.git
+cd sherlock
+python3 -m pip install -r requirements.txt
+
+# Usage
+python3 sherlock username1 username2
+python3 sherlock --csv --output results.csv username
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">Maigret</span> - Advanced username search</p>
+                        <div class="tool-details" id="maigret-details">
+                            <div class="code-block">
+# Install
+pip install maigret
+
+# Usage
+maigret username
+maigret -a username  # Advanced mode
+maigret --ids username  # Show site IDs
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For username challenges:
+                        <ul>
+                            <li>Try variations of the username (add numbers, underscores)</li>
+                            <li>Check archived profiles using Wayback Machine</li>
+                            <li>Look for GitHub repositories or code snippets</li>
+                            <li>Search for email addresses associated with the username</li>
+                            <li>Don't ignore smaller or niche platforms</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="email">
+            <div class="card">
+                <h2>Email Investigation</h2>
+                <div class="osint-section">
+                    <p>Finding information associated with an email address.</p>
+
+                    <div class="sub-topic">
+                        <h3>Email Search Tools</h3>
+                        <div class="code-block">
+# Email search engines
+https://epieos.com/
+https://www.thatsthem.com/
+https://hunter.io/
+https://www.email-format.com/
+
+# Breach databases
+https://haveibeenpwned.com/
+https://dehashed.com/ (paid)
+https://leakpeek.com/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Manual Email Search</h3>
+                        <div class="code-block">
+# Google Dorks
+"email@example.com"
+intext:"email@example.com"
+filetype:log "email@example.com"
+
+# Social media search
+site:twitter.com "email@example.com"
+site:linkedin.com "email@example.com"
+
+# GitHub search
+"email@example.com" in:file
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Breach Data Analysis</h3>
+                        <div class="code-block">
+# Check haveibeenpwned.com for breaches
+# Analyze breach data for:
+- Associated passwords
+- Linked accounts
+- IP addresses
+- Personal information
+
+# Search breach dumps locally
+grep "email@example.com" breachfile.txt
+rg "email@example.com" breach_directory/
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Email Tools</h3>
+                        <p><span class="tool-name">holehe</span> - Email account checker</p>
+                        <div class="tool-details" id="holehe-details">
+                            <div class="code-block">
+# Install
+pip install holehe
+
+# Usage
+holehe email@example.com
+holehe --only-used email@example.com
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">h8mail</span> - Email breach scanner</p>
+                        <div class="tool-details" id="h8mail-details">
+                            <div class="code-block">
+# Install
+pip install h8mail
+
+# Usage
+h8mail -t email@example.com
+h8mail -t email@example.com -bc path/to/breach_compilation/
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For email challenges:
+                        <ul>
+                            <li>Check for password leaks in breach databases</li>
+                            <li>Look for username variations from the email prefix</li>
+                            <li>Search for domain registration information</li>
+                            <li>Try password reset flows on common sites</li>
+                            <li>Check for GitHub commits with the email</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="domain">
+            <div class="card">
+                <h2>Domain Research</h2>
+                <div class="osint-section">
+                    <p>Investigating websites and domain names for information.</p>
+
+                    <div class="sub-topic">
+                        <h3>Domain Lookup Tools</h3>
+                        <div class="code-block">
+# WHOIS lookup
+https://whois.domaintools.com/
+https://who.is/
+whois example.com # CLI command
+
+# DNS tools
+https://dnsdumpster.com/
+https://viewdns.info/
+dig example.com # CLI command
+
+# Subdomain finders
+https://subdomainfinder.c99.nl/
+https://searchdns.netcraft.com/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Website Analysis</h3>
+                        <div class="code-block">
+# Wayback Machine
+https://web.archive.org/
+
+# Page source analysis
+View page source and check for:
+- Comments
+- Hidden links
+- Metadata
+- JavaScript variables
+
+# BuiltWith
+https://builtwith.com/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Subdomain Enumeration</h3>
+                        <div class="code-block">
+# Using subfinder
+subfinder -d example.com -o subdomains.txt
+
+# Using assetfinder
+assetfinder --subs-only example.com
+
+# Using amass
+amass enum -d example.com
+
+# Using Google Dorks
+site:*.example.com
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Domain Tools</h3>
+                        <p><span class="tool-name">theHarvester</span> - Domain information gatherer</p>
+                        <div class="tool-details" id="harvester-details">
+                            <div class="code-block">
+# Install
+git clone https://github.com/laramies/theHarvester
+cd theHarvester
+python3 -m pip install -r requirements.txt
+
+# Usage
+python3 theHarvester.py -d example.com -b all
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">Amass</span> - Subdomain enumeration</p>
+                        <div class="tool-details" id="amass-details">
+                            <div class="code-block">
+# Install
+sudo apt install amass
+
+# Usage
+amass enum -d example.com
+amass enum -d example.com -brute -w wordlist.txt
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For domain challenges:
+                        <ul>
+                            <li>Check historical DNS records</li>
+                            <li>Look for hidden subdomains</li>
+                            <li>Examine SSL certificates for info</li>
+                            <li>Search GitHub for domain mentions</li>
+                            <li>Check for exposed admin panels (admin.example.com)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="image">
+            <div class="card">
+                <h2>Image Analysis</h2>
+                <div class="osint-section">
+                    <p>Extracting information from images and photos.</p>
+
+                    <div class="sub-topic">
+                        <h3>Metadata Extraction</h3>
+                        <div class="code-block">
+# Using exiftool
+exiftool image.jpg
+exiftool -gpslatitude -gpslongitude image.jpg
+
+# Using identify (ImageMagick)
+identify -verbose image.png
+
+# Online tools
+https://exif.tools/
+https://metapicz.com/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Reverse Image Search</h3>
+                        <div class="code-block">
+# Search engines
+https://images.google.com/
+https://tineye.com/
+https://www.bing.com/visualsearch
+
+# Specialized tools
+https://lens.google.com/
+https://yandex.com/images/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Steganography Detection</h3>
+                        <div class="code-block">
+# Using steghide
+steghide extract -sf image.jpg
+
+# Using zsteg
+zsteg image.png
+
+# Using stegsolve
+java -jar stegsolve.jar
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Image Tools</h3>
+                        <p><span class="tool-name">exiftool</span> - Metadata viewer</p>
+                        <div class="tool-details" id="exiftool-details">
+                            <div class="code-block">
+# Install
+sudo apt install libimage-exiftool-perl
+
+# Usage
+exiftool image.jpg
+exiftool -a -u -g1 image.jpg  # Show all tags
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">StegSolve</span> - Image analysis</p>
+                        <div class="tool-details" id="stegsolve-details">
+                            <div class="code-block">
+# Download from GitHub
+java -jar stegsolve.jar
+
+# Features:
+- LSB analysis
+- Color plane viewer
+- Image combiner
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For image challenges:
+                        <ul>
+                            <li>Always check metadata first</li>
+                            <li>Try multiple reverse image search engines</li>
+                            <li>Look for hidden data in color channels</li>
+                            <li>Check both the beginning and end of the file</li>
+                            <li>Try adjusting brightness/contrast</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="geo">
+            <div class="card">
+                <h2>Geolocation</h2>
+                <div class="osint-section">
+                    <p>Identifying locations from images, clues, and metadata.</p>
+
+                    <div class="sub-topic">
+                        <h3>Geolocation Tools</h3>
+                        <div class="code-block">
+# Map tools
+https://www.google.com/maps
+https://www.openstreetmap.org/
+https://earth.google.com/
+
+# Geolocation games
+https://www.geoguessr.com/
+https://www.citystreets.ws/
+
+# Sun position calculators
+https://www.suncalc.org/
+https://www.sunearthtools.com/
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Techniques</h3>
+                        <div class="code-block">
+1. Identify landmarks or unique features
+2. Analyze vegetation and architecture
+3. Check license plates and road signs
+4. Use sun position and shadows
+5. Look for business names or logos
+6. Check phone numbers or area codes
+7. Analyze flight paths or ship tracks
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Street View Investigation</h3>
+                        <div class="code-block">
+# Google Street View tips:
+- Check dates in bottom corner
+- Look for reflections in windows
+- Examine business hours signs
+- Note vehicle models and designs
+- Check seasonal decorations
+
+# Historical imagery
+https://www.historicaerials.com/
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Geo Tools</h3>
+                        <p><span class="tool-name">Google Earth Pro</span> - Advanced mapping</p>
+                        <div class="tool-details" id="earth-details">
+                            <div class="code-block">
+# Download from: https://www.google.com/earth/versions/
+# Features:
+- Historical imagery
+- 3D buildings
+- Measurement tools
+- Flight simulator
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">SunCalc</span> - Sun position tool</p>
+                        <div class="tool-details" id="suncalc-details">
+                            <div class="code-block">
+# Website: https://www.suncalc.org/
+# Features:
+- Sun position at specific times
+- Shadow direction
+- Twilight times
+- Azimuth and elevation
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For geolocation challenges:
+                        <ul>
+                            <li>Look for unique architectural features</li>
+                            <li>Check language on signs and advertisements</li>
+                            <li>Note vehicle types and license plates</li>
+                            <li>Use shadows to estimate time and direction</li>
+                            <li>Search for business names visible in images</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="social">
+            <div class="card">
+                <h2>Social Media Investigation</h2>
+                <div class="osint-section">
+                    <p>Extracting information from social media platforms.</p>
+
+                    <div class="sub-topic">
+                        <h3>Platform-Specific Search</h3>
+                        <div class="code-block">
+# Twitter advanced search
+https://twitter.com/search-advanced
+
+# Facebook graph search
+site:facebook.com "search term"
+
+# Instagram hashtag search
+https://www.instagram.com/explore/tags/ctf/
+
+# LinkedIn people search
+site:linkedin.com/in "name"
+
+# Reddit search
+site:reddit.com "username"
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Content Analysis</h3>
+                        <div class="code-block">
+1. Check profile pictures (reverse image search)
+2. Analyze connections and friends
+3. Look for check-ins and location tags
+4. Examine timestamps and posting patterns
+5. Note linked accounts and websites
+6. Search for phone numbers or emails
+7. Check for embedded images/metadata
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Archived Content</h3>
+                        <div class="code-block">
+# Wayback Machine
+https://web.archive.org/
+
+# Archive.today
+https://archive.ph/
+
+# Google cache
+cache:https://twitter.com/username
+
+# Specialized archives
+https://www.redditsearch.io/
+https://www.twitonomy.com/
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>Social Media Tools</h3>
+                        <p><span class="tool-name">Twint</span> - Twitter scraping</p>
+                        <div class="tool-details" id="twint-details">
+                            <div class="code-block">
+# Install
+pip install twint
+
+# Usage
+twint -u username --user-full
+twint -s "search term" --since "2020-01-01"
+                            </div>
+                        </div>
+
+                        <p><span class="tool-name">Osintgram</span> - Instagram OSINT</p>
+                        <div class="tool-details" id="osintgram-details">
+                            <div class="code-block">
+# Install
+git clone https://github.com/Datalux/Osintgram
+cd Osintgram
+pip install -r requirements.txt
+
+# Usage
+python3 main.py username
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For social media challenges:
+                        <ul>
+                            <li>Check deleted posts via archives</li>
+                            <li>Look for geotags in posts</li>
+                            <li>Analyze friend networks for clues</li>
+                            <li>Search for username variations</li>
+                            <li>Check linked accounts in bios</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>OSINT Tools</h2>
+                <div class="osint-section">
+                    <p>Essential tools for OSINT investigations.</p>
+
+                    <div class="sub-topic">
+                        <h3>General OSINT Tools</h3>
+                        <table>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Purpose</th>
+                                <th>Link</th>
+                            </tr>
+                            <tr>
+                                <td>Maltego</td>
+                                <td>Relationship mapping</td>
+                                <td>https://www.maltego.com/</td>
+                            </tr>
+                            <tr>
+                                <td>SpiderFoot</td>
+                                <td>Automated OSINT</td>
+                                <td>https://www.spiderfoot.net/</td>
+                            </tr>
+                            <tr>
+                                <td>Recon-ng</td>
+                                <td>Web reconnaissance</td>
+                                <td>https://github.com/lanmaster53/recon-ng</td>
+                            </tr>
+                            <tr>
+                                <td>Buscador</td>
+                                <td>OSINT VM</td>
+                                <td>https://inteltechniques.com/buscador/</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Search Engines</h3>
+                        <table>
+                            <tr>
+                                <th>Engine</th>
+                                <th>Specialty</th>
+                                <th>Link</th>
+                            </tr>
+                            <tr>
+                                <td>Google</td>
+                                <td>General search</td>
+                                <td>https://www.google.com/</td>
+                            </tr>
+                            <tr>
+                                <td>Bing</td>
+                                <td>Image search</td>
+                                <td>https://www.bing.com/</td>
+                            </tr>
+                            <tr>
+                                <td>Yandex</td>
+                                <td>Russian content</td>
+                                <td>https://yandex.com/</td>
+                            </tr>
+                            <tr>
+                                <td>DuckDuckGo</td>
+                                <td>Privacy-focused</td>
+                                <td>https://duckduckgo.com/</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>People Search</h3>
+                        <table>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Purpose</th>
+                                <th>Link</th>
+                            </tr>
+                            <tr>
+                                <td>Pipl</td>
+                                <td>People search</td>
+                                <td>https://pipl.com/</td>
+                            </tr>
+                            <tr>
+                                <td>TruePeopleSearch</td>
+                                <td>US people search</td>
+                                <td>https://www.truepeoplesearch.com/</td>
+                            </tr>
+                            <tr>
+                                <td>FamilyTreeNow</td>
+                                <td>Genealogy</td>
+                                <td>https://www.familytreenow.com/</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>CTF OSINT Tips</h2>
+                <div class="osint-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ul>
+                            <li>Start with basic searches (Google, username checkers)</li>
+                            <li>Document all findings for correlation</li>
+                            <li>Try multiple tools and approaches</li>
+                            <li>Look for connections between pieces of information</li>
+                            <li>Verify information from multiple sources</li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Common Flag Locations</h3>
+                        <div class="code-block">
+# Typical flag formats:
+flag{Th1s_1s_4_fl4g}
+FLAG{Th1s_1s_4_fl4g}
+CTF{Th1s_1s_4_fl4g}
+
+# Common hiding places:
+- Image metadata
+- Old website versions
+- Social media bios
+- GitHub repositories
+- Domain registration info
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Quick Checks</h3>
+                        <ul>
+                            <li>Search for usernames across platforms</li>
+                            <li>Check WHOIS records for domains</li>
+                            <li>Look at image EXIF data</li>
+                            <li>Search breach databases for emails</li>
+                            <li>Check archived versions of websites</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | OSINT Guide</p>
+            <p>Remember: Always practice ethical hacking with proper authorization.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.querySelectorAll('h2').forEach(header=>{header.addEventListener('click',()=>{header.classList.toggle('active');const section=header.nextElementSibling;section.style.display=section.style.display==='block'?'none':'block'})});
+        document.querySelectorAll('.nav-link').forEach(link=>{link.addEventListener('click',(e)=>{e.preventDefault();const sectionId=link.getAttribute('data-section');const section=document.getElementById(sectionId);const header=section.querySelector('h2');document.querySelectorAll('.osint-section').forEach(sec=>{sec.style.display='none'});document.querySelectorAll('h2').forEach(h=>{h.classList.remove('active')});header.classList.add('active');header.nextElementSibling.style.display='block';section.scrollIntoView({behavior:'smooth'})})});
+        document.querySelectorAll('.tool-name').forEach(tool=>{tool.addEventListener('click',()=>{const details=tool.parentNode.nextElementSibling;details.style.display=details.style.display==='block'?'none':'block'})});
+        document.querySelector('h2').classList.add('active');document.querySelector('.osint-section').style.display='block';
+    </script>
+</body>
+</html>
