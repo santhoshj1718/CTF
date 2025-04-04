@@ -51,6 +51,23 @@
             background-color: rgba(255, 152, 0, 0.2);
         }
         
+        /* Chat Icon */
+        #chatIcon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #ff9800;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+        
         /* Hidden Chat Room */
         #chatRoom {
             display: none;
@@ -99,6 +116,7 @@
             padding: 8px;
             border-radius: 5px;
             background-color: #252525;
+            position: relative;
         }
         
         .message .sender {
@@ -110,6 +128,12 @@
         .message .time {
             color: #888;
             font-size: 0.7em;
+            text-align: right;
+        }
+        
+        .message .expires {
+            color: #ff4444;
+            font-size: 0.6em;
             text-align: right;
         }
         
@@ -218,34 +242,6 @@
             font-size: 0.9em;
             display: none;
         }
-        
-        /* Online Users */
-        #onlineUsers {
-            padding: 5px 10px;
-            background-color: #252525;
-            border-radius: 15px;
-            font-size: 0.8em;
-            margin-left: 10px;
-        }
-        
-        /* Notification */
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #ff9800;
-            color: #121212;
-            padding: 10px 15px;
-            border-radius: 5px;
-            z-index: 1002;
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
     </style>
 </head>
 <body>
@@ -266,10 +262,13 @@
         <p>Explore and master CTF techniques across multiple categories.</p>
     </div>
     
+    <!-- Chat Icon -->
+    <div id="chatIcon">💬</div>
+    
     <!-- Hidden Chat Room -->
     <div id="chatRoom">
         <div id="chatHeader">
-            <span>Secret CTF Chat <span id="onlineUsers">0 Online</span></span>
+            <span>Secret CTF Chat</span>
             <button id="closeChat">✕</button>
         </div>
         <div id="chatMessages"></div>
@@ -298,30 +297,41 @@
             </div>
         </div>
     </div>
-    
-    <!-- Notification -->
-    <div class="notification" id="notification"></div>
-    
-    <script>
+
+    <script type="module">
+        // Import Firebase v9 modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+        import { getDatabase, ref, push, onChildAdded, remove, onValue } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVZgwe4NOEpWzJx9APi7djBu8OQNAFYfw",
+            authDomain: "ctftime-3d42b.firebaseapp.com",
+            databaseURL: "https://ctftime-3d42b-default-rtdb.firebaseio.com",
+            projectId: "ctftime-3d42b",
+            storageBucket: "ctftime-3d42b.firebasestorage.app",
+            messagingSenderId: "642662966697",
+            appId: "1:642662966697:web:82b2b6251677083dc810b8",
+            measurementId: "G-3FR70MCLDY"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const analytics = getAnalytics(app);
+
         // Configuration
         const SECRET_KEY = "ctf123";
-        const HEARTBEAT_INTERVAL = 5000; // 5 seconds
-        const PRESENCE_TIMEOUT = 15000; // 15 seconds
-        
-        let messages = [];
-        let userName = "";
-        let chatOpen = false;
-        let onlineUsers = {};
-        let lastActivity = {};
-        let heartbeatInterval;
+        const MESSAGE_EXPIRE_HOURS = 2; // Messages expire after 2 hours
         
         // DOM Elements
+        const chatIcon = document.getElementById('chatIcon');
         const chatRoom = document.getElementById('chatRoom');
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
         const closeChat = document.getElementById('closeChat');
-        const onlineUsersEl = document.getElementById('onlineUsers');
         
         const accessModal = document.getElementById('accessModal');
         const accessKey = document.getElementById('accessKey');
@@ -329,9 +339,11 @@
         const submitAccess = document.getElementById('submitAccess');
         const cancelAccess = document.getElementById('cancelAccess');
         const accessError = document.getElementById('accessError');
-        
-        const notification = document.getElementById('notification');
-        
+
+        let userName = "";
+        let messages = {};
+        let cleanupInterval;
+
         // Initialize
         function init() {
             // Check if already authenticated
@@ -340,15 +352,13 @@
                 const { key, name } = JSON.parse(auth);
                 if (key === SECRET_KEY) {
                     userName = name;
-                    startChat();
-                    return;
                 }
             }
             
-            // Show access modal
-            showAccessModal();
+            // Start cleanup interval
+            cleanupInterval = setInterval(cleanupExpiredMessages, 60000); // Check every minute
         }
-        
+
         // Show access modal
         function showAccessModal() {
             accessModal.style.display = 'flex';
@@ -374,88 +384,63 @@
             // Load messages
             loadMessages();
             
-            // Start presence tracking
-            updatePresence();
-            heartbeatInterval = setInterval(updatePresence, HEARTBEAT_INTERVAL);
-            
             // Show chat
             chatRoom.style.display = 'flex';
-            chatOpen = true;
             messageInput.focus();
-            
-            // Listen for messages
-            window.addEventListener('storage', handleStorageEvent);
         }
         
-        // Update user presence
-        function updatePresence() {
+        // Load messages from Firebase
+        function loadMessages() {
+            const messagesRef = ref(database, 'messages');
+            
+            onChildAdded(messagesRef, (snapshot) => {
+                const message = snapshot.val();
+                messages[snapshot.key] = {
+                    ...message,
+                    id: snapshot.key,
+                    expiresAt: message.timestamp + (MESSAGE_EXPIRE_HOURS * 60 * 60 * 1000)
+                };
+                renderMessages();
+            });
+        }
+        
+        // Clean up expired messages
+        function cleanupExpiredMessages() {
             const now = Date.now();
-            const userId = generateUserId();
-            
-            // Update my presence
-            onlineUsers[userId] = {
-                name: userName,
-                lastSeen: now
-            };
-            
-            // Clean up inactive users
-            Object.keys(onlineUsers).forEach(id => {
-                if (now - onlineUsers[id].lastSeen > PRESENCE_TIMEOUT) {
-                    delete onlineUsers[id];
+            Object.keys(messages).forEach(key => {
+                if (messages[key].expiresAt <= now) {
+                    remove(ref(database, `messages/${key}`));
+                    delete messages[key];
                 }
             });
-            
-            // Update UI
-            updateOnlineUsers();
-            
-            // Broadcast presence
-            localStorage.setItem('ctfChatPresence', JSON.stringify({
-                userId,
-                name: userName,
-                timestamp: now
-            }));
-        }
-        
-        // Generate unique user ID
-        function generateUserId() {
-            return 'user-' + Math.random().toString(36).substr(2, 9);
-        }
-        
-        // Update online users display
-        function updateOnlineUsers() {
-            const count = Object.keys(onlineUsers).length;
-            onlineUsersEl.textContent = `${count} Online`;
-        }
-        
-        // Load messages from storage
-        function loadMessages() {
-            const savedMessages = localStorage.getItem('ctfChatMessages');
-            if (savedMessages) {
-                messages = JSON.parse(savedMessages);
-                renderMessages();
-            }
-        }
-        
-        // Save messages to storage
-        function saveMessages() {
-            localStorage.setItem('ctfChatMessages', JSON.stringify(messages));
+            renderMessages();
         }
         
         // Render messages to UI
         function renderMessages() {
             chatMessages.innerHTML = "";
+            const now = Date.now();
             
-            messages.forEach(msg => {
+            // Sort messages by timestamp (newest first)
+            const sortedMessages = Object.values(messages).sort((a, b) => b.timestamp - a.timestamp);
+            
+            sortedMessages.forEach(msg => {
                 const messageEl = document.createElement('div');
                 messageEl.className = 'message';
                 
                 const time = new Date(msg.timestamp);
                 const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
+                // Calculate remaining time
+                const expiresIn = Math.max(0, msg.expiresAt - now);
+                const hoursLeft = Math.floor(expiresIn / (60 * 60 * 1000));
+                const minsLeft = Math.floor((expiresIn % (60 * 60 * 1000)) / (60 * 1000));
+                
                 messageEl.innerHTML = `
-                    <div class="sender">${msg.sender}</div>
+                    <div class="sender">${msg.sender || 'Anonymous'}</div>
                     <div>${msg.text}</div>
                     <div class="time">${timeStr}</div>
+                    <div class="expires">Expires in: ${hoursLeft}h ${minsLeft}m</div>
                 `;
                 
                 chatMessages.appendChild(messageEl);
@@ -475,68 +460,28 @@
                     timestamp: Date.now()
                 };
                 
-                // Add to local messages
-                messages.push(newMessage);
-                saveMessages();
-                renderMessages();
+                // Add to Firebase
+                push(ref(database, 'messages'), newMessage);
                 
                 // Clear input
                 messageInput.value = "";
-                
-                // Broadcast message
-                localStorage.setItem('ctfChatNewMessage', JSON.stringify(newMessage));
-                
-                // Notify other tabs
-                setTimeout(() => {
-                    localStorage.removeItem('ctfChatNewMessage');
-                }, 100);
             }
-        }
-        
-        // Handle storage events
-        function handleStorageEvent(e) {
-            if (e.key === 'ctfChatNewMessage' && e.newValue) {
-                const newMessage = JSON.parse(e.newValue);
-                
-                // Check if we already have this message
-                const exists = messages.some(msg => 
-                    msg.sender === newMessage.sender && 
-                    msg.text === newMessage.text && 
-                    msg.timestamp === newMessage.timestamp
-                );
-                
-                if (!exists) {
-                    messages.push(newMessage);
-                    saveMessages();
-                    
-                    if (chatOpen) {
-                        renderMessages();
-                    } else {
-                        showNotification(`New message from ${newMessage.sender}`);
-                    }
-                }
-            }
-            else if (e.key === 'ctfChatPresence' && e.newValue) {
-                const presence = JSON.parse(e.newValue);
-                onlineUsers[presence.userId] = {
-                    name: presence.name,
-                    lastSeen: presence.timestamp
-                };
-                updateOnlineUsers();
-            }
-        }
-        
-        // Show notification
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.style.display = 'block';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
         }
         
         // Event Listeners
+        chatIcon.addEventListener('click', () => {
+            const auth = localStorage.getItem('ctfChatAuth');
+            if (auth) {
+                const { key, name } = JSON.parse(auth);
+                if (key === SECRET_KEY) {
+                    userName = name;
+                    startChat();
+                    return;
+                }
+            }
+            showAccessModal();
+        });
+        
         submitAccess.addEventListener('click', () => {
             const key = accessKey.value.trim();
             const name = userNameInput.value.trim();
@@ -562,7 +507,6 @@
         
         closeChat.addEventListener('click', () => {
             chatRoom.style.display = 'none';
-            chatOpen = false;
         });
         
         // Initialize on load
