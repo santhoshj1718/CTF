@@ -235,6 +235,15 @@
             font-size: 0.9em;
             display: none;
         }
+        
+        /* Hidden flag */
+        #hiddenFlag {
+            position: absolute;
+            opacity: 0;
+            height: 0;
+            width: 0;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -253,6 +262,7 @@
             </ul>
         </nav>
         <p>Explore and master CTF techniques across multiple categories.</p>
+        <div id="hiddenFlag">FLAG{1nsp3ct_3l3m3nt_4_th3_w1n}</div>
     </div>
     
     <!-- Chat Icon -->
@@ -291,31 +301,11 @@
         </div>
     </div>
 
-    <script type="module">
-        // Import Firebase v9 modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-        import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js';
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAVZgwe4NOEpWzJx9APi7djBu8OQNAFYfw",
-            authDomain: "ctftime-3d42b.firebaseapp.com",
-            databaseURL: "https://ctftime-3d42b-default-rtdb.firebaseio.com",
-            projectId: "ctftime-3d42b",
-            storageBucket: "ctftime-3d42b.firebasestorage.app",
-            messagingSenderId: "642662966697",
-            appId: "1:642662966697:web:82b2b6251677083dc810b8",
-            measurementId: "G-3FR70MCLDY"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const analytics = getAnalytics(app);
-
+    <script>
         // Configuration
         const SECRET_KEY = "ctf123";
+        const LOCAL_STORAGE_KEY = "ctfChatMessages";
+        const AUTH_STORAGE_KEY = "ctfChatAuth";
         
         // DOM Elements
         const chatIcon = document.getElementById('chatIcon');
@@ -338,13 +328,16 @@
         // Initialize
         function init() {
             // Check if already authenticated
-            const auth = localStorage.getItem('ctfChatAuth');
+            const auth = localStorage.getItem(AUTH_STORAGE_KEY);
             if (auth) {
                 const { key, name } = JSON.parse(auth);
                 if (key === SECRET_KEY) {
                     userName = name;
                 }
             }
+            
+            // Load any existing messages
+            loadMessages();
         }
 
         // Show access modal
@@ -364,44 +357,30 @@
         // Start chat session
         function startChat() {
             // Save authentication
-            localStorage.setItem('ctfChatAuth', JSON.stringify({
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
                 key: SECRET_KEY,
                 name: userName
             }));
-            
-            // Load messages
-            loadMessages();
             
             // Show chat
             chatRoom.style.display = 'flex';
             messageInput.focus();
             
-            // Listen for new messages
-            const messagesRef = ref(database, 'messages');
-            onChildAdded(messagesRef, (snapshot) => {
-                const newMessage = snapshot.val();
-                
-                // Check if we already have this message
-                const exists = messages.some(msg => 
-                    msg.text === newMessage.text && 
-                    msg.timestamp === newMessage.timestamp
-                );
-                
-                if (!exists) {
-                    messages.push(newMessage);
-                    renderMessages();
-                }
-            });
+            // Render existing messages
+            renderMessages();
         }
         
-        // Load messages from Firebase
+        // Load messages from localStorage
         function loadMessages() {
-            const messagesRef = ref(database, 'messages');
-            onChildAdded(messagesRef, (snapshot) => {
-                const message = snapshot.val();
-                messages.push(message);
-                renderMessages();
-            });
+            const savedMessages = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (savedMessages) {
+                messages = JSON.parse(savedMessages);
+            }
+        }
+        
+        // Save messages to localStorage
+        function saveMessages() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(messages));
         }
         
         // Render messages to UI
@@ -438,8 +417,14 @@
                     timestamp: Date.now()
                 };
                 
-                // Add to Firebase
-                push(ref(database, 'messages'), newMessage);
+                // Add to messages array
+                messages.push(newMessage);
+                
+                // Save to localStorage
+                saveMessages();
+                
+                // Render messages
+                renderMessages();
                 
                 // Clear input
                 messageInput.value = "";
@@ -448,7 +433,7 @@
         
         // Event Listeners
         chatIcon.addEventListener('click', () => {
-            const auth = localStorage.getItem('ctfChatAuth');
+            const auth = localStorage.getItem(AUTH_STORAGE_KEY);
             if (auth) {
                 const { key, name } = JSON.parse(auth);
                 if (key === SECRET_KEY) {
