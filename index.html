@@ -391,5 +391,128 @@
       });
     }
   </script>
+  import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { ref, push, onValue } from "firebase/database";
+import { db } from "@/lib/firebase";
+import { CornerDownLeft } from "lucide-react";
+import { KeyRound } from "lucide-react";
+
+export default function SecretRoom() {
+  const [showModal, setShowModal] = useState(true);
+  const [secretKey, setSecretKey] = useState("");
+  const [inputKey, setInputKey] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+
+  const handleCheckKey = () => {
+    if (inputKey === "cyberchat123") {
+      setShowModal(false);
+    } else {
+      alert("Wrong secret key!");
+    }
+  };
+
+  useEffect(() => {
+    const messagesRef = ref(db, "messages");
+    onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      const loadedMessages = [];
+      for (let id in data) {
+        loadedMessages.push({ id, ...data[id] });
+      }
+      setMessages(loadedMessages);
+    });
+  }, []);
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() === "") return;
+    const messagesRef = ref(db, "messages");
+    push(messagesRef, {
+      text: newMessage,
+      timestamp: new Date().toISOString(),
+    });
+    setNewMessage("");
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white p-4 flex flex-col items-center">
+      {showModal ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+        >
+          <Card className="bg-gray-900 p-6 w-[90%] max-w-md rounded-2xl shadow-xl">
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-white">Enter Secret Key</h2>
+                <KeyRound className="w-5 h-5 text-purple-500" />
+              </div>
+              <Input
+                className="bg-gray-800 text-white"
+                placeholder="Enter the secret key"
+                value={inputKey}
+                onChange={(e) => setInputKey(e.target.value)}
+              />
+              <Button onClick={handleCheckKey} className="bg-purple-600 hover:bg-purple-700 text-white">
+                Unlock
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ) : (
+        <div className="w-full max-w-3xl mt-4">
+          <div className="text-left mb-2 text-gray-400 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+              <p className="text-xs">Secret Room is Active</p>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 p-4 rounded-2xl shadow-lg h-[65vh] overflow-y-auto space-y-2">
+            {messages.map((msg, index) => (
+              <motion.div
+                key={msg.id || index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-gray-800 p-3 rounded-xl text-sm shadow"
+              >
+                {msg.text}
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 mt-4">
+            <Input
+              className="bg-gray-800 text-white"
+              placeholder="Type your message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            />
+            <Button
+              onClick={handleSendMessage}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <CornerDownLeft size={18} />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!showModal && (
+        <div className="fixed left-2 bottom-2 text-purple-500 text-xs opacity-80">
+          <KeyRound className="w-4 h-4" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 </body>
 </html>
