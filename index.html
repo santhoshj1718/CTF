@@ -376,13 +376,13 @@
       const messagesRef = ref(db, "messages");
       onChildAdded(messagesRef, (snapshot) => {
         const msg = snapshot.val();
-        if (!messages.find(m => m.time === msg.time && m.sender === msg.sender)) {
+        if (!messages.find(m => m.time === msg.time && m.sender === msg.sender && m.text === msg.text)) {
           messages.push(msg);
           const msgDiv = document.createElement("div");
           msgDiv.className = "message";
           msgDiv.innerHTML = `
             <div class="sender">${msg.sender}</div>
-            <div>${msg.text}</div>
+            <div class="text">${msg.text}</div>
             <div class="time">${msg.time}</div>
           `;
           chatMessages.appendChild(msgDiv);
