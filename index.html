@@ -1,516 +1,395 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTF Learning Hub</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #f8f8f8;
-            font-family: 'Courier New', Courier, monospace;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            position: relative;
-            min-height: 100vh;
-        }
-        .terminal {
-            width: 80%;
-            margin: 50px auto;
-            padding: 20px;
-            border: 3px solid #ff9800;
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
-        }
-        .terminal h1 {
-            color: #ff9800;
-            text-align: center;
-            text-transform: uppercase;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-        }
-        nav ul li {
-            display: inline;
-            margin: 0 15px;
-        }
-        nav ul li a {
-            color: #ff9800;
-            text-decoration: none;
-            font-weight: bold;
-            padding: 5px 10px;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-        }
-        nav ul li a:hover {
-            border: 2px solid #ff9800;
-            border-radius: 5px;
-            background-color: rgba(255, 152, 0, 0.2);
-        }
-        
-        /* Chat Icon */
-        #chatIcon {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #ff9800;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 999;
-            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
-        }
-        
-        /* Hidden Chat Room */
-        #chatRoom {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 350px;
-            height: 450px;
-            background-color: #1e1e1e;
-            border: 2px solid #ff9800;
-            border-radius: 10px;
-            flex-direction: column;
-            z-index: 1000;
-        }
-        
-        #chatHeader {
-            background-color: #ff9800;
-            color: #121212;
-            padding: 10px;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        #closeChat {
-            background: none;
-            border: none;
-            color: #121212;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1.2em;
-        }
-        
-        #chatMessages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-            text-align: left;
-        }
-        
-        .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 5px;
-            background-color: #252525;
-            position: relative;
-        }
-        
-        .message .sender {
-            color: #ff9800;
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-        
-        .message .time {
-            color: #888;
-            font-size: 0.7em;
-            text-align: right;
-        }
-        
-        .message .expires {
-            color: #ff4444;
-            font-size: 0.6em;
-            text-align: right;
-        }
-        
-        #chatInput {
-            display: flex;
-            padding: 10px;
-            border-top: 1px solid #333;
-        }
-        
-        #messageInput {
-            flex: 1;
-            padding: 10px;
-            background-color: #121212;
-            color: #f8f8f8;
-            border: 1px solid #ff9800;
-            border-radius: 4px;
-            margin-right: 5px;
-        }
-        
-        #sendButton {
-            padding: 0 15px;
-            background-color: #ff9800;
-            color: #121212;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        /* Access Modal */
-        #accessModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            z-index: 1001;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background-color: #1e1e1e;
-            padding: 25px;
-            border: 2px solid #ff9800;
-            border-radius: 10px;
-            width: 320px;
-            text-align: center;
-        }
-        
-        .modal-title {
-            color: #ff9800;
-            margin-bottom: 20px;
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        
-        .input-label {
-            display: block;
-            margin-bottom: 5px;
-            color: #f8f8f8;
-        }
-        
-        .modal-input {
-            width: 100%;
-            padding: 10px;
-            background-color: #121212;
-            color: #f8f8f8;
-            border: 1px solid #ff9800;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        
-        .modal-button {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        #submitAccess {
-            background-color: #ff9800;
-            color: #121212;
-        }
-        
-        #cancelAccess {
-            background-color: #333;
-            color: #f8f8f8;
-        }
-        
-        .error-message {
-            color: #ff4444;
-            margin-top: 10px;
-            font-size: 0.9em;
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CTF Learning Hub</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #f8f8f8;
+      font-family: 'Courier New', Courier, monospace;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .terminal {
+      width: 80%;
+      margin: 50px auto;
+      padding: 20px;
+      border: 3px solid #ff9800;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
+    }
+
+    .terminal h1 {
+      color: #ff9800;
+      text-transform: uppercase;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    nav ul li {
+      display: inline;
+      margin: 0 15px;
+    }
+
+    nav ul li a {
+      color: #ff9800;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 5px 10px;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+
+    nav ul li a:hover {
+      border: 2px solid #ff9800;
+      border-radius: 5px;
+      background-color: rgba(255, 152, 0, 0.2);
+    }
+
+    #chatIcon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background-color: #ff9800;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 999;
+      box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+    }
+
+    #chatRoom {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 350px;
+      height: 450px;
+      background-color: #1e1e1e;
+      border: 2px solid #ff9800;
+      border-radius: 10px;
+      flex-direction: column;
+      z-index: 1000;
+    }
+
+    #chatHeader {
+      background-color: #ff9800;
+      color: #121212;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #closeChat {
+      background: none;
+      border: none;
+      color: #121212;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+
+    #chatMessages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      text-align: left;
+      height: 300px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      background-color: #252525;
+    }
+
+    .message .sender {
+      color: #ff9800;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .message .time {
+      color: #888;
+      font-size: 0.7em;
+      text-align: right;
+    }
+
+    #chatInput {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #333;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 10px;
+      background-color: #121212;
+      color: #f8f8f8;
+      border: 1px solid #ff9800;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+
+    #sendButton {
+      padding: 0 15px;
+      background-color: #ff9800;
+      color: #121212;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #accessModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #1e1e1e;
+      padding: 25px;
+      border: 2px solid #ff9800;
+      border-radius: 10px;
+      width: 320px;
+      text-align: center;
+    }
+
+    .modal-title {
+      color: #ff9800;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .input-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #f8f8f8;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      background-color: #121212;
+      color: #f8f8f8;
+      border: 1px solid #ff9800;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .modal-button {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #submitAccess {
+      background-color: #ff9800;
+      color: #121212;
+    }
+
+    #cancelAccess {
+      background-color: #333;
+      color: #f8f8f8;
+    }
+
+    .error-message {
+      color: #ff4444;
+      margin-top: 10px;
+      font-size: 0.9em;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="terminal">
-        <h1>CTF Learning Hub</h1>
-        <nav>
-            <ul>
-                <li><a href="web.html">Web Exploitation</a></li>
-                <li><a href="reverse.html">Reverse Engineering</a></li>
-                <li><a href="binary.html">Binary Exploitation</a></li>
-                <li><a href="forensic.html">Forensics</a></li>
-                <li><a href="crypto.html">Cryptography</a></li> 
-                <li><a href="osint.html">OSINT</a></li>              
-                <li><a href="stegano.html">Steganography</a></li>
-                <li><a href="misc.html">Miscellaneous</a></li>
-            </ul>
-        </nav>
-        <p>Explore and master CTF techniques across multiple categories.</p>
+  <div class="terminal">
+    <h1>CTF Learning Hub</h1>
+    <nav>
+      <ul>
+        <li><a href="web.html">Web Exploitation</a></li>
+        <li><a href="reverse.html">Reverse Engineering</a></li>
+        <li><a href="binary.html">Binary Exploitation</a></li>
+        <li><a href="forensic.html">Forensics</a></li>
+        <li><a href="crypto.html">Cryptography</a></li>
+        <li><a href="osint.html">OSINT</a></li>
+        <li><a href="stegano.html">Steganography</a></li>
+        <li><a href="misc.html">Miscellaneous</a></li>
+      </ul>
+    </nav>
+    <p>Explore and master CTF techniques across multiple categories.</p>
+  </div>
+
+  <div id="chatIcon">💬</div>
+
+  <div id="chatRoom">
+    <div id="chatHeader">
+      <span>Secret CTF Chat</span>
+      <button id="closeChat">✕</button>
     </div>
-    
-    <!-- Chat Icon -->
-    <div id="chatIcon">💬</div>
-    
-    <!-- Hidden Chat Room -->
-    <div id="chatRoom">
-        <div id="chatHeader">
-            <span>Secret CTF Chat</span>
-            <button id="closeChat">✕</button>
-        </div>
-        <div id="chatMessages"></div>
-        <div id="chatInput">
-            <input type="text" id="messageInput" placeholder="Type your message...">
-            <button id="sendButton">Send</button>
-        </div>
+    <div id="chatMessages"></div>
+    <div id="chatInput">
+      <input type="text" id="messageInput" placeholder="Type your message...">
+      <button id="sendButton">Send</button>
     </div>
-    
-    <!-- Access Modal -->
-    <div id="accessModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Enter Secret Chat</h3>
-            <div class="input-group">
-                <label for="accessKey" class="input-label">Secret Key:</label>
-                <input type="password" id="accessKey" class="modal-input" placeholder="Enter secret key">
-            </div>
-            <div class="input-group">
-                <label for="userName" class="input-label">Your Name:</label>
-                <input type="text" id="userName" class="modal-input" placeholder="Enter your name">
-            </div>
-            <div id="accessError" class="error-message">Incorrect key or invalid name</div>
-            <div class="modal-buttons">
-                <button id="submitAccess" class="modal-button">Enter Chat</button>
-                <button id="cancelAccess" class="modal-button">Cancel</button>
-            </div>
-        </div>
+  </div>
+
+  <div id="accessModal">
+    <div class="modal-content">
+      <h3 class="modal-title">Enter Secret Chat</h3>
+      <div class="input-group">
+        <label for="accessKey" class="input-label">Secret Key:</label>
+        <input type="password" id="accessKey" class="modal-input">
+      </div>
+      <div class="input-group">
+        <label for="userName" class="input-label">Your Name:</label>
+        <input type="text" id="userName" class="modal-input">
+      </div>
+      <div id="accessError" class="error-message">Incorrect key or invalid name</div>
+      <div class="modal-buttons">
+        <button id="submitAccess" class="modal-button">Enter Chat</button>
+        <button id="cancelAccess" class="modal-button">Cancel</button>
+      </div>
     </div>
+  </div>
 
-    <script type="module">
-        // Import Firebase v9 modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-        import { getDatabase, ref, push, onChildAdded, remove, onValue } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js';
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+    import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAVZgwe4NOEpWzJx9APi7djBu8OQNAFYfw",
-            authDomain: "ctftime-3d42b.firebaseapp.com",
-            databaseURL: "https://ctftime-3d42b-default-rtdb.firebaseio.com",
-            projectId: "ctftime-3d42b",
-            storageBucket: "ctftime-3d42b.firebasestorage.app",
-            messagingSenderId: "642662966697",
-            appId: "1:642662966697:web:82b2b6251677083dc810b8",
-            measurementId: "G-3FR70MCLDY"
-        };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVZgwe4NOEpWzJx9APi7djBu8OQNAFYfw",
+      authDomain: "ctftime-3d42b.firebaseapp.com",
+      databaseURL: "https://ctftime-3d42b-default-rtdb.firebaseio.com",
+      projectId: "ctftime-3d42b",
+      storageBucket: "ctftime-3d42b.appspot.com",
+      messagingSenderId: "642662966697",
+      appId: "1:642662966697:web:82b2b6251677083dc810b8"
+    };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const analytics = getAnalytics(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const SECRET_KEY = "ctf123";
 
-        // Configuration
-        const SECRET_KEY = "ctf123";
-        const MESSAGE_EXPIRE_HOURS = 2; // Messages expire after 2 hours
-        
-        // DOM Elements
-        const chatIcon = document.getElementById('chatIcon');
-        const chatRoom = document.getElementById('chatRoom');
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        const closeChat = document.getElementById('closeChat');
-        
-        const accessModal = document.getElementById('accessModal');
-        const accessKey = document.getElementById('accessKey');
-        const userNameInput = document.getElementById('userName');
-        const submitAccess = document.getElementById('submitAccess');
-        const cancelAccess = document.getElementById('cancelAccess');
-        const accessError = document.getElementById('accessError');
+    const chatIcon = document.getElementById("chatIcon");
+    const chatRoom = document.getElementById("chatRoom");
+    const closeChat = document.getElementById("closeChat");
+    const messageInput = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
+    const chatMessages = document.getElementById("chatMessages");
 
-        let userName = "";
-        let messages = {};
-        let cleanupInterval;
+    const accessModal = document.getElementById("accessModal");
+    const accessKey = document.getElementById("accessKey");
+    const userNameInput = document.getElementById("userName");
+    const submitAccess = document.getElementById("submitAccess");
+    const cancelAccess = document.getElementById("cancelAccess");
+    const accessError = document.getElementById("accessError");
 
-        // Initialize
-        function init() {
-            // Check if already authenticated
-            const auth = localStorage.getItem('ctfChatAuth');
-            if (auth) {
-                const { key, name } = JSON.parse(auth);
-                if (key === SECRET_KEY) {
-                    userName = name;
-                }
-            }
-            
-            // Start cleanup interval
-            cleanupInterval = setInterval(cleanupExpiredMessages, 60000); // Check every minute
-        }
+    let userName = "";
+    let messages = [];
 
-        // Show access modal
-        function showAccessModal() {
-            accessModal.style.display = 'flex';
-            accessKey.focus();
+    chatIcon.addEventListener("click", () => {
+      const auth = localStorage.getItem("ctfChatAuth");
+      if (auth) {
+        const { key, name } = JSON.parse(auth);
+        if (key === SECRET_KEY) {
+          userName = name;
+          chatRoom.style.display = "flex";
+          loadMessages();
+        } else {
+          accessModal.style.display = "flex";
         }
-        
-        // Hide access modal
-        function hideAccessModal() {
-            accessModal.style.display = 'none';
-            accessKey.value = "";
-            userNameInput.value = "";
-            accessError.style.display = "none";
-        }
-        
-        // Start chat session
-        function startChat() {
-            // Save authentication
-            localStorage.setItem('ctfChatAuth', JSON.stringify({
-                key: SECRET_KEY,
-                name: userName
-            }));
-            
-            // Load messages
-            loadMessages();
-            
-            // Show chat
-            chatRoom.style.display = 'flex';
-            messageInput.focus();
-        }
-        
-        // Load messages from Firebase
-        function loadMessages() {
-            const messagesRef = ref(database, 'messages');
-            
-            onChildAdded(messagesRef, (snapshot) => {
-                const message = snapshot.val();
-                messages[snapshot.key] = {
-                    ...message,
-                    id: snapshot.key,
-                    expiresAt: message.timestamp + (MESSAGE_EXPIRE_HOURS * 60 * 60 * 1000)
-                };
-                renderMessages();
-            });
-        }
-        
-        // Clean up expired messages
-        function cleanupExpiredMessages() {
-            const now = Date.now();
-            Object.keys(messages).forEach(key => {
-                if (messages[key].expiresAt <= now) {
-                    remove(ref(database, `messages/${key}`));
-                    delete messages[key];
-                }
-            });
-            renderMessages();
-        }
-        
-        // Render messages to UI
-        function renderMessages() {
-            chatMessages.innerHTML = "";
-            const now = Date.now();
-            
-            // Sort messages by timestamp (newest first)
-            const sortedMessages = Object.values(messages).sort((a, b) => b.timestamp - a.timestamp);
-            
-            sortedMessages.forEach(msg => {
-                const messageEl = document.createElement('div');
-                messageEl.className = 'message';
-                
-                const time = new Date(msg.timestamp);
-                const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                // Calculate remaining time
-                const expiresIn = Math.max(0, msg.expiresAt - now);
-                const hoursLeft = Math.floor(expiresIn / (60 * 60 * 1000));
-                const minsLeft = Math.floor((expiresIn % (60 * 60 * 1000)) / (60 * 1000));
-                
-                messageEl.innerHTML = `
-                    <div class="sender">${msg.sender || 'Anonymous'}</div>
-                    <div>${msg.text}</div>
-                    <div class="time">${timeStr}</div>
-                    <div class="expires">Expires in: ${hoursLeft}h ${minsLeft}m</div>
-                `;
-                
-                chatMessages.appendChild(messageEl);
-            });
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        // Send a new message
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (text) {
-                const newMessage = {
-                    sender: userName,
-                    text: text,
-                    timestamp: Date.now()
-                };
-                
-                // Add to Firebase
-                push(ref(database, 'messages'), newMessage);
-                
-                // Clear input
-                messageInput.value = "";
-            }
-        }
-        
-        // Event Listeners
-        chatIcon.addEventListener('click', () => {
-            const auth = localStorage.getItem('ctfChatAuth');
-            if (auth) {
-                const { key, name } = JSON.parse(auth);
-                if (key === SECRET_KEY) {
-                    userName = name;
-                    startChat();
-                    return;
-                }
-            }
-            showAccessModal();
+      } else {
+        accessModal.style.display = "flex";
+      }
+    });
+
+    cancelAccess.onclick = () => accessModal.style.display = "none";
+
+    submitAccess.addEventListener("click", () => {
+      const key = accessKey.value.trim();
+      const name = userNameInput.value.trim();
+
+      if (key === SECRET_KEY && name.length > 0) {
+        userName = name;
+        localStorage.setItem("ctfChatAuth", JSON.stringify({ key, name }));
+        accessModal.style.display = "none";
+        chatRoom.style.display = "flex";
+        loadMessages();
+      } else {
+        accessError.style.display = "block";
+      }
+    });
+
+    closeChat.onclick = () => chatRoom.style.display = "none";
+
+    sendButton.onclick = () => {
+      const text = messageInput.value.trim();
+      if (text.length > 0) {
+        push(ref(db, "messages"), {
+          sender: userName,
+          text,
+          time: new Date().toLocaleTimeString()
         });
-        
-        submitAccess.addEventListener('click', () => {
-            const key = accessKey.value.trim();
-            const name = userNameInput.value.trim();
-            
-            if (key === SECRET_KEY && name.length > 0) {
-                userName = name;
-                hideAccessModal();
-                startChat();
-            } else {
-                accessError.style.display = "block";
-            }
-        });
-        
-        cancelAccess.addEventListener('click', hideAccessModal);
-        
-        sendButton.addEventListener('click', sendMessage);
-        
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-        
-        closeChat.addEventListener('click', () => {
-            chatRoom.style.display = 'none';
-        });
-        
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+        messageInput.value = "";
+      }
+    };
+
+    function loadMessages() {
+      const messagesRef = ref(db, "messages");
+      onChildAdded(messagesRef, (snapshot) => {
+        const msg = snapshot.val();
+        if (!messages.find(m => m.time === msg.time && m.sender === msg.sender)) {
+          messages.push(msg);
+          const msgDiv = document.createElement("div");
+          msgDiv.className = "message";
+          msgDiv.innerHTML = `
+            <div class="sender">${msg.sender}</div>
+            <div>${msg.text}</div>
+            <div class="time">${msg.time}</div>
+          `;
+          chatMessages.appendChild(msgDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+      });
+    }
+  </script>
 </body>
 </html>
